@@ -1,272 +1,763 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>ARC Raiders Raid Planner</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ARC Raiders Raid Planner</title>
+  <style>
+    :root {
+      --bg: #fff1dc;
+      --bg-2: #ffd9aa;
+      --card: rgba(255,255,255,0.78);
+      --text: #1f2328;
+      --muted: #6a6460;
+      --line: rgba(80,52,20,0.14);
+      --accent: #ff7a00;
+      --accent-2: #ffb24a;
+      --good: #198754;
+      --shadow: 0 14px 30px rgba(120, 72, 18, 0.10);
+      --radius: 18px;
+    }
 
-<style>
-body{
-font-family:Arial,Helvetica,sans-serif;
-margin:0;
-background:linear-gradient(135deg,#ffe6c7,#ffd4a2);
-color:#222;
-}
+    * { box-sizing: border-box; }
 
-.container{
-max-width:1100px;
-margin:auto;
-padding:20px;
-}
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(255, 176, 74, 0.35), transparent 25%),
+        linear-gradient(135deg, var(--bg), var(--bg-2));
+      min-height: 100vh;
+    }
 
-.card{
-background:white;
-border-radius:12px;
-padding:20px;
-margin-bottom:20px;
-box-shadow:0 4px 12px rgba(0,0,0,.1);
-}
+    .app {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
 
-h1{
-margin-top:0;
-}
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: end;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
 
-.grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:20px;
-}
+    h1 {
+      margin: 0;
+      font-size: clamp(32px, 4vw, 48px);
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
 
-.loot-grid{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:12px;
-margin-top:10px;
-}
+    .subtitle {
+      margin-top: 8px;
+      color: var(--muted);
+      max-width: 720px;
+      font-size: 15px;
+    }
 
-.loot-item{
-background:#fafafa;
-border-radius:10px;
-padding:10px;
-text-align:center;
-border:1px solid #ddd;
-}
+    .hero-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
 
-.loot-item img{
-width:60px;
-height:60px;
-object-fit:contain;
-display:block;
-margin:auto;
-}
+    .button, button {
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 16px;
+      background: var(--accent);
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: transform .15s ease, opacity .15s ease;
+    }
 
-select,input{
-padding:8px;
-border-radius:8px;
-border:1px solid #ccc;
-width:100%;
-}
+    .button:hover, button:hover { transform: translateY(-1px); }
+    .button.secondary {
+      background: white;
+      color: var(--text);
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
 
-.badge{
-display:inline-block;
-background:#ff7a00;
-color:white;
-padding:4px 10px;
-border-radius:20px;
-font-size:12px;
-margin-right:6px;
-margin-bottom:4px;
-}
+    .layout {
+      display: grid;
+      grid-template-columns: 390px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
 
-.summary{
-background:#fff7ed;
-padding:12px;
-border-radius:10px;
-font-size:13px;
-white-space:pre-wrap;
-}
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
 
-button{
-background:#ff7a00;
-border:none;
-color:white;
-padding:10px 16px;
-border-radius:10px;
-cursor:pointer;
-}
+    .card-inner { padding: 18px; }
 
-@media(max-width:800px){
-.grid{grid-template-columns:1fr;}
-.loot-grid{grid-template-columns:repeat(2,1fr);}
-}
-</style>
+    .section-title {
+      margin: 0 0 14px;
+      font-size: 24px;
+      letter-spacing: -0.02em;
+    }
+
+    .stack { display: grid; gap: 14px; }
+
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin: 0 0 7px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    input, select {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.88);
+      color: var(--text);
+      padding: 12px 14px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: rgba(255,122,0,.55);
+      box-shadow: 0 0 0 4px rgba(255,122,0,.12);
+    }
+
+    .preset-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 10px;
+    }
+
+    .preset {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.76);
+      border-radius: 14px;
+      padding: 12px;
+      text-align: left;
+      cursor: pointer;
+      transition: transform .15s ease, border-color .15s ease, background .15s ease;
+    }
+
+    .preset:hover { transform: translateY(-1px); }
+    .preset.active {
+      border-color: rgba(255,122,0,.5);
+      background: rgba(255,247,237,.95);
+      box-shadow: 0 0 0 3px rgba(255,122,0,.08);
+    }
+
+    .preset strong { display: block; font-size: 15px; margin-bottom: 4px; }
+    .preset span { color: var(--muted); font-size: 12px; line-height: 1.35; display: block; }
+
+    .view-toggle {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .toggle-btn {
+      padding: 9px 13px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.7);
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .toggle-btn.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: transparent;
+    }
+
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: start;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .status-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      background: rgba(255,255,255,.8);
+      border: 1px solid var(--line);
+    }
+
+    .status-chip .dot {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--good);
+    }
+
+    .snapshot-grid {
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 14px;
+    }
+
+    .mini-card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      background: rgba(255,255,255,.68);
+    }
+
+    .mini-card h3 {
+      margin: 0 0 8px;
+      font-size: 14px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .route-box {
+      min-height: 260px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .route-visual {
+      border-radius: 14px;
+      border: 1px dashed rgba(255,122,0,.35);
+      background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,248,240,.88));
+      padding: 16px;
+      margin-top: 12px;
+    }
+
+    .route-step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+
+    .route-step:last-child { margin-bottom: 0; }
+
+    .route-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex: 0 0 auto;
+    }
+
+    .priority-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .loot-item {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.82);
+      border-radius: 16px;
+      padding: 12px;
+      text-align: center;
+      min-height: 138px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .loot-icon {
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      margin: 0 auto;
+      display: grid;
+      place-items: center;
+      font-size: 26px;
+      background: linear-gradient(135deg, #fff7ed, #ffe4bf);
+      border: 1px solid rgba(255,122,0,.2);
+    }
+
+    .loot-item strong {
+      font-size: 14px;
+      line-height: 1.2;
+    }
+
+    .loot-item small {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .pill-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      background: var(--accent);
+      color: #fff;
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .summary-box {
+      border-radius: 16px;
+      background: rgba(255,248,240,.9);
+      border: 1px solid rgba(255,122,0,.14);
+      padding: 14px;
+      white-space: pre-wrap;
+      font-size: 13px;
+      line-height: 1.45;
+      color: #3c342d;
+    }
+
+    .footer-note {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .glance-only { display: none; }
+
+    body.glance .editor-card,
+    body.glance .summary-card,
+    body.glance .hero-actions .secondary,
+    body.glance .footer-note {
+      display: none;
+    }
+
+    body.glance .layout {
+      grid-template-columns: 1fr;
+    }
+
+    body.glance .glance-only { display: inline-flex; }
+
+    body.glance .snapshot-card .card-inner {
+      padding: 18px;
+    }
+
+    body.glance .priority-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    body.glance .snapshot-grid {
+      grid-template-columns: 1fr;
+    }
+
+    @media (max-width: 980px) {
+      .layout,
+      .snapshot-grid {
+        grid-template-columns: 1fr;
+      }
+      .priority-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .app { padding: 14px; }
+      .preset-grid { grid-template-columns: 1fr; }
+      .priority-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .hero { align-items: start; }
+      h1 { font-size: 34px; }
+      .section-title { font-size: 22px; }
+      .loot-item { min-height: 124px; }
+    }
+  </style>
 </head>
-
 <body>
+  <div class="app">
+    <div class="hero">
+      <div>
+        <h1>ARC Raiders Raid Planner</h1>
+        <div class="subtitle">Fast second-screen helper for Xbox, phone, or laptop. Pick a package, choose a spawn, and get a clear 5–10 second loot plan.</div>
+      </div>
+      <div class="hero-actions">
+        <button id="copyBtn">Copy Raid Plan</button>
+        <button class="button secondary" id="modeBtn">Glance Mode</button>
+      </div>
+    </div>
 
-<div class="container">
+    <div class="layout">
+      <div class="card editor-card">
+        <div class="card-inner stack">
+          <div>
+            <div class="section-title">Loadout Setup</div>
+            <div class="view-toggle">
+              <button class="toggle-btn active" data-view="full">Full View</button>
+              <button class="toggle-btn" data-view="glance">Glance View</button>
+            </div>
+          </div>
 
-<h1>ARC Raiders Raid Planner</h1>
+          <div>
+            <label for="player">Player</label>
+            <input id="player" type="text" value="Jartukainen" />
+          </div>
 
-<div class="grid">
+          <div>
+            <label for="weapon">Weapon Goal</label>
+            <input id="weapon" type="text" value="Stitcher IV" />
+          </div>
 
-<div class="card">
+          <div>
+            <label>Quick Presets</label>
+            <div class="preset-grid" id="presetGrid"></div>
+          </div>
 
-<label>Player</label>
-<input id="player" value="Jarno">
+          <div>
+            <label for="package">Raid Package</label>
+            <select id="package"></select>
+          </div>
 
-<label>Weapon Goal</label>
-<input id="weapon" value="Stitcher IV">
+          <div>
+            <label for="spawn">Spawn</label>
+            <select id="spawn"></select>
+          </div>
+        </div>
+      </div>
 
-<label>Raid Package</label>
-<select id="package">
-<option value="loot">Loot Run</option>
-<option value="rebuild">Rebuild</option>
-<option value="pvp">PvP Push</option>
-<option value="trials">Trials</option>
-<option value="weapon">Weapon Upgrade</option>
-</select>
+      <div class="card snapshot-card">
+        <div class="card-inner">
+          <div class="status-row">
+            <div>
+              <div class="section-title" style="margin-bottom:6px;">Raid Snapshot</div>
+              <div id="packageSummary" class="subtitle" style="margin:0; max-width:none;"></div>
+            </div>
+            <div class="status-chip"><span class="dot"></span><span id="statusText">READY</span></div>
+          </div>
 
-<label>Spawn</label>
-<select id="spawn">
-<option value="dam">Dam</option>
-<option value="spaceport">Spaceport</option>
-<option value="bluegate">Blue Gate</option>
-<option value="stella">Stella Montis</option>
-<option value="buried">Buried City</option>
-</select>
+          <div class="snapshot-grid">
+            <div class="mini-card route-box">
+              <div>
+                <h3>Route</h3>
+                <div id="spawnName" style="font-size:28px; font-weight:800; letter-spacing:-0.03em;"></div>
+                <div id="routeSummary" style="margin-top:8px; color:var(--muted); line-height:1.45;"></div>
+              </div>
+              <div class="route-visual" id="routeVisual"></div>
+            </div>
 
-</div>
+            <div class="mini-card">
+              <h3>Priority Loot</h3>
+              <div class="priority-grid" id="priorityGrid"></div>
+            </div>
+          </div>
 
-<div class="card">
+          <div class="snapshot-grid" style="margin-top:14px;">
+            <div class="mini-card">
+              <h3>Safe Pocket</h3>
+              <div class="pill-row" id="safePocketRow"></div>
+            </div>
+            <div class="mini-card">
+              <h3>Consumables</h3>
+              <div class="pill-row" id="consumablesRow"></div>
+            </div>
+          </div>
 
-<h3>Raid Snapshot</h3>
+          <div class="snapshot-grid" style="margin-top:14px; grid-template-columns: 1fr;">
+            <div class="mini-card">
+              <h3>Weapon Goal</h3>
+              <div id="weaponGoalText" style="font-size:24px; font-weight:800; letter-spacing:-0.02em;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-<div id="priority" class="loot-grid"></div>
+    <div class="card summary-card" style="margin-top:18px;">
+      <div class="card-inner">
+        <div class="section-title" style="font-size:22px;">Raid Summary</div>
+        <div class="summary-box" id="summaryBox"></div>
+        <div class="footer-note">Tip: keep this open on your phone or second monitor. Use Glance Mode when you want bigger cards and less clutter.</div>
+      </div>
+    </div>
+  </div>
 
-<h4>Safe Pocket</h4>
-<div id="safe"></div>
+  <script>
+    const packageData = {
+      loot: {
+        label: "Loot Run",
+        short: "Low-risk refill run. Avoid fights and extract early.",
+        status: "LOOT MODE",
+        targets: ["Battery", "Magnets", "Wires", "Crude Oil", "Canister"],
+        safePocket: ["Battery", "Magnets"],
+        consumables: ["Bandage", "Stim"],
+      },
+      rebuild: {
+        label: "Rebuild",
+        short: "Best after losing gear. Prioritize guaranteed value over PvP.",
+        status: "REBUILD MODE",
+        targets: ["Battery", "Magnets", "Wires", "Bandage"],
+        safePocket: ["Battery", "Magnets", "Stim"],
+        consumables: ["Bandage", "Stim"],
+      },
+      pvp: {
+        label: "PvP Push",
+        short: "Go in geared. Sustain first, then pressure.",
+        status: "PVP READY",
+        targets: ["Shield Charger", "Bandage", "Stim", "Medium Gun Parts"],
+        safePocket: ["Stim", "Bandage"],
+        consumables: ["Bandage", "Shield Charger", "Stim"],
+      },
+      trials: {
+        label: "Trials",
+        short: "Mobility and sustain before greed.",
+        status: "TRIALS READY",
+        targets: ["Stim", "Bandage", "Shield Charger", "Battery"],
+        safePocket: ["Stim", "Bandage"],
+        consumables: ["Stim", "Bandage", "Shield Charger"],
+      },
+      weapon: {
+        label: "Weapon Upgrade",
+        short: "Farm upgrade parts and get out clean.",
+        status: "UPGRADE RUN",
+        targets: ["Medium Gun Parts", "Heavy Gun Parts", "Battery", "Magnets"],
+        safePocket: ["Battery", "Magnets"],
+        consumables: ["Bandage", "Stim"],
+      },
+    };
 
-<h4>Consumables</h4>
-<div id="cons"></div>
+    const spawnData = {
+      dam: {
+        label: "Dam",
+        routeSummary: "Industrial path with strong oil and weapon-part value.",
+        steps: ["Spawn in", "Battery / oil line", "Weapon parts", "Extract"],
+        boosts: ["Battery", "Crude Oil", "Medium Gun Parts", "Heavy Gun Parts"],
+      },
+      spaceport: {
+        label: "Spaceport",
+        routeSummary: "Best electronics loop for quick component recovery.",
+        steps: ["Spawn in", "Electronics loop", "Containers", "Extract"],
+        boosts: ["Magnets", "Wires", "Battery", "Medium Gun Parts"],
+      },
+      bluegate: {
+        label: "Blue Gate",
+        routeSummary: "Utility path with reliable components and shield loot.",
+        steps: ["Spawn in", "Utility rooms", "Shield path", "Extract"],
+        boosts: ["Magnets", "Wires", "Shield Charger", "Light Gun Parts"],
+      },
+      stella: {
+        label: "Stella Montis",
+        routeSummary: "Medical-focused route for sustain and safer exits.",
+        steps: ["Spawn in", "Medical path", "Support loot", "Extract"],
+        boosts: ["Bandage", "Shield Charger", "Stim", "Canister"],
+      },
+      buried: {
+        label: "Buried City",
+        routeSummary: "High risk, better for brave farming and fast resets.",
+        steps: ["Spawn in", "Rare loot line", "Quick check", "Extract fast"],
+        boosts: ["Heavy Gun Parts", "Bandage", "Crude Oil"],
+      },
+    };
 
-<h4>Weapon Goal</h4>
-<div id="weaponText"></div>
+    const itemMeta = {
+      "Battery": { icon: "🔋", hint: "workshop + craft" },
+      "Magnets": { icon: "🧲", hint: "electronics" },
+      "Wires": { icon: "🧵", hint: "utility + craft" },
+      "Crude Oil": { icon: "🛢️", hint: "fuel + craft" },
+      "Canister": { icon: "🧴", hint: "sustain / fuel" },
+      "Bandage": { icon: "🩹", hint: "healing" },
+      "Shield Charger": { icon: "🛡️", hint: "shield sustain" },
+      "Stim": { icon: "💉", hint: "stamina / movement" },
+      "Medium Gun Parts": { icon: "🔧", hint: "weapon upgrade" },
+      "Heavy Gun Parts": { icon: "⚙️", hint: "high tier weapon" },
+      "Light Gun Parts": { icon: "🎯", hint: "backup weapon" },
+    };
 
-</div>
+    const packageSelect = document.getElementById('package');
+    const spawnSelect = document.getElementById('spawn');
+    const presetGrid = document.getElementById('presetGrid');
+    const playerInput = document.getElementById('player');
+    const weaponInput = document.getElementById('weapon');
+    const packageSummary = document.getElementById('packageSummary');
+    const statusText = document.getElementById('statusText');
+    const spawnName = document.getElementById('spawnName');
+    const routeSummary = document.getElementById('routeSummary');
+    const routeVisual = document.getElementById('routeVisual');
+    const priorityGrid = document.getElementById('priorityGrid');
+    const safePocketRow = document.getElementById('safePocketRow');
+    const consumablesRow = document.getElementById('consumablesRow');
+    const weaponGoalText = document.getElementById('weaponGoalText');
+    const summaryBox = document.getElementById('summaryBox');
+    const copyBtn = document.getElementById('copyBtn');
+    const modeBtn = document.getElementById('modeBtn');
 
-</div>
+    function populateControls() {
+      Object.entries(packageData).forEach(([key, pkg]) => {
+        const opt = document.createElement('option');
+        opt.value = key;
+        opt.textContent = pkg.label;
+        packageSelect.appendChild(opt);
+      });
 
-<div class="card">
+      Object.entries(spawnData).forEach(([key, spawn]) => {
+        const opt = document.createElement('option');
+        opt.value = key;
+        opt.textContent = spawn.label;
+        spawnSelect.appendChild(opt);
+      });
 
-<h3>Raid Summary</h3>
-<div id="summary" class="summary"></div>
-<button onclick="copySummary()">Copy Raid Plan</button>
+      Object.entries(packageData).forEach(([key, pkg]) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'preset';
+        btn.dataset.preset = key;
+        btn.innerHTML = `<strong>${pkg.label}</strong><span>${pkg.short}</span>`;
+        btn.addEventListener('click', () => {
+          packageSelect.value = key;
+          updateView();
+        });
+        presetGrid.appendChild(btn);
+      });
+    }
 
-</div>
+    function getPriorityList(pkg, spawn) {
+      const combined = [...spawn.boosts, ...pkg.targets];
+      return [...new Set(combined)].slice(0, 6);
+    }
 
-</div>
+    function renderRoute(steps) {
+      routeVisual.innerHTML = '';
+      steps.forEach((step, index) => {
+        const row = document.createElement('div');
+        row.className = 'route-step';
+        row.innerHTML = `<span class="route-num">${index + 1}</span><span>${step}</span>`;
+        routeVisual.appendChild(row);
+      });
+    }
 
-<script>
+    function renderPills(target, values) {
+      target.innerHTML = '';
+      values.forEach(value => {
+        const pill = document.createElement('span');
+        pill.className = 'pill';
+        pill.textContent = value;
+        target.appendChild(pill);
+      });
+    }
 
-const packages={
-loot:{
-target:["Battery","Magnets","Wires","Crude Oil","Canister"],
-safe:["Battery","Magnets"],
-cons:["Bandage","Stim"]
-},
-rebuild:{
-target:["Battery","Magnets","Wires","Bandage"],
-safe:["Battery","Magnets","Stim"],
-cons:["Bandage","Stim"]
-},
-pvp:{
-target:["Shield Charger","Bandage","Stim","Medium Gun Parts"],
-safe:["Stim","Bandage"],
-cons:["Bandage","Shield Charger","Stim"]
-},
-trials:{
-target:["Stim","Bandage","Shield Charger","Battery"],
-safe:["Stim","Bandage"],
-cons:["Stim","Bandage"]
-},
-weapon:{
-target:["Medium Gun Parts","Heavy Gun Parts","Battery"],
-safe:["Battery","Magnets"],
-cons:["Bandage","Stim"]
-}
-};
+    function renderPriority(items) {
+      priorityGrid.innerHTML = '';
+      items.forEach(item => {
+        const meta = itemMeta[item] || { icon: '📦', hint: 'loot' };
+        const card = document.createElement('div');
+        card.className = 'loot-item';
+        card.innerHTML = `
+          <div class="loot-icon">${meta.icon}</div>
+          <strong>${item}</strong>
+          <small>${meta.hint}</small>
+        `;
+        priorityGrid.appendChild(card);
+      });
+    }
 
-const spawns={
-dam:"Industrial path → oil area → weapon parts → extract",
-spaceport:"Electronics loop → containers → extract",
-bluegate:"Utility line → components → extract",
-stella:"Medical path → supplies → extract",
-buried:"High risk rare loot → extract fast"
-};
+    function updatePresetButtons(activeKey) {
+      document.querySelectorAll('.preset').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.preset === activeKey);
+      });
+    }
 
-function update(){
+    function updateView() {
+      const pkgKey = packageSelect.value || 'pvp';
+      const spawnKey = spawnSelect.value || 'spaceport';
+      const pkg = packageData[pkgKey];
+      const spawn = spawnData[spawnKey];
+      const player = playerInput.value || 'Player';
+      const weapon = weaponInput.value || 'Stitcher IV';
+      const priority = getPriorityList(pkg, spawn);
 
-const pkg=document.getElementById("package").value;
-const spawn=document.getElementById("spawn").value;
-const player=document.getElementById("player").value;
-const weapon=document.getElementById("weapon").value;
+      updatePresetButtons(pkgKey);
+      packageSummary.textContent = pkg.short;
+      statusText.textContent = pkg.status;
+      spawnName.textContent = spawn.label;
+      routeSummary.textContent = spawn.routeSummary;
+      renderRoute(spawn.steps);
+      renderPriority(priority);
+      renderPills(safePocketRow, pkg.safePocket);
+      renderPills(consumablesRow, pkg.consumables);
+      weaponGoalText.textContent = weapon;
 
-const p=packages[pkg];
+      summaryBox.textContent = [
+        'ARC RAID PLAN',
+        `Player: ${player}`,
+        `Package: ${pkg.label}`,
+        `Spawn: ${spawn.label}`,
+        `Priority Loot: ${priority.join(', ')}`,
+        `Safe Pocket: ${pkg.safePocket.join(', ')}`,
+        `Consumables: ${pkg.consumables.join(', ')}`,
+        `Weapon Goal: ${weapon}`,
+        `Route: ${spawn.steps.join(' → ')}`,
+      ].join('\n');
+    }
 
-const lootDiv=document.getElementById("priority");
-lootDiv.innerHTML="";
+    function setViewMode(mode) {
+      document.body.classList.toggle('glance', mode === 'glance');
+      document.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.view === mode);
+      });
+      modeBtn.textContent = mode === 'glance' ? 'Full View' : 'Glance Mode';
+      modeBtn.dataset.mode = mode;
+    }
 
-p.target.slice(0,6).forEach(l=>{
-const div=document.createElement("div");
-div.className="loot-item";
-div.innerHTML=`<strong>${l}</strong>`;
-lootDiv.appendChild(div);
-});
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(summaryBox.textContent);
+        copyBtn.textContent = 'Copied';
+        setTimeout(() => copyBtn.textContent = 'Copy Raid Plan', 1200);
+      } catch {
+        alert('Copy failed on this device.');
+      }
+    });
 
-const safe=document.getElementById("safe");
-safe.innerHTML="";
-p.safe.forEach(s=>{
-safe.innerHTML+=`<span class="badge">${s}</span>`;
-});
+    modeBtn.addEventListener('click', () => {
+      const next = document.body.classList.contains('glance') ? 'full' : 'glance';
+      setViewMode(next);
+    });
 
-const cons=document.getElementById("cons");
-cons.innerHTML="";
-p.cons.forEach(s=>{
-cons.innerHTML+=`<span class="badge">${s}</span>`;
-});
+    document.addEventListener('click', (event) => {
+      if (event.target.matches('.toggle-btn')) {
+        setViewMode(event.target.dataset.view);
+      }
+    });
 
-document.getElementById("weaponText").innerText=weapon;
+    [packageSelect, spawnSelect, playerInput, weaponInput].forEach(el => {
+      el.addEventListener('input', updateView);
+      el.addEventListener('change', updateView);
+    });
 
-const summary=`ARC RAID PLAN
-Player: ${player}
-Package: ${pkg}
-Spawn: ${spawn}
-Priority Loot: ${p.target.join(", ")}
-Safe Pocket: ${p.safe.join(", ")}
-Consumables: ${p.cons.join(", ")}
-Weapon Goal: ${weapon}
-Route: ${spawns[spawn]}
-`;
-
-document.getElementById("summary").innerText=summary;
-
-}
-
-function copySummary(){
-navigator.clipboard.writeText(
-document.getElementById("summary").innerText
-);
-alert("Raid plan copied!");
-}
-
-document.querySelectorAll("select,input").forEach(e=>{
-e.addEventListener("change",update);
-});
-
-update();
-
-</script>
-
+    populateControls();
+    packageSelect.value = 'pvp';
+    spawnSelect.value = 'spaceport';
+    setViewMode('full');
+    updateView();
+  </script>
 </body>
 </html>
