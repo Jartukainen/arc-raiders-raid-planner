@@ -119,6 +119,78 @@
       border: 1px solid var(--line); background: rgba(255,255,255,0.08); border-radius: 16px; padding: 12px; text-align: center;
       min-height: 140px; display: flex; flex-direction: column; justify-content: center; gap: 8px;
     }
+
+    .workbench-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .workbench-card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(4,10,24,0.95), rgba(10,18,40,0.95));
+      box-shadow: 0 10px 24px rgba(0,0,0,0.28);
+    }
+
+    .workbench-top {
+      min-height: 110px;
+      padding: 14px;
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      background: linear-gradient(135deg, rgba(71,207,255,0.14), rgba(255,138,0,0.10));
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .workbench-name {
+      font-size: 20px;
+      font-weight: 900;
+      color: white;
+      letter-spacing: -0.02em;
+    }
+
+    .workbench-level {
+      font-size: 12px;
+      color: #dbe5ff;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .workbench-icon {
+      font-size: 34px;
+      opacity: 0.95;
+    }
+
+    .workbench-body {
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .workbench-focus {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .need-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .need-pill {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.10);
+      color: white;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
     .loot-icon {
       width: 58px; height: 58px; border-radius: 18px; margin: 0 auto; display: grid; place-items: center; overflow: hidden;
       background: linear-gradient(135deg, var(--arc-blue), var(--arc-green)); border: 1px solid rgba(255,255,255,0.18);
@@ -139,6 +211,10 @@
       white-space: pre-wrap; font-size: 13px; line-height: 1.5; color: var(--text);
     }
     .footer-note { margin-top: 12px; color: var(--muted); font-size: 13px; }
+
+    @media (max-width: 980px) {
+      .workbench-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
 
     .image-library-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
     .image-card { border: 1px solid var(--line); border-radius: 16px; padding: 12px; background: rgba(255,255,255,0.06); }
@@ -169,9 +245,10 @@
     @media (max-width: 640px) {
       .app { padding: 14px; }
       .preset-grid, .profile-row { grid-template-columns: 1fr; }
-      .priority-grid, .image-library-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .priority-grid, .image-library-grid, .workbench-grid { grid-template-columns: repeat(1, minmax(0,1fr)); }
       .section-title { font-size: 24px; }
       h1 { font-size: 34px; }
+    }
     }
   </style>
 </head>
@@ -305,7 +382,7 @@
           </div>
           <div class="mini-card">
             <h3>Workbench Focus</h3>
-            <div id="workbenchGrid" class="priority-grid" style="grid-template-columns: repeat(2, minmax(0,1fr));"></div>
+            <div id="workbenchGrid" class="workbench-grid"></div>
           </div>
         </div>
       </div>
@@ -452,28 +529,33 @@
 
     const workbenchProfiles = {
       early: [
-        { name: 'Gunsmith', need: ['Metal Parts','Rubber Parts'] },
-        { name: 'Gear Bench', need: ['Plastic Parts','Fabric'] },
-        { name: 'Medical Lab', need: ['Fabric','ARC Alloy'] },
-        { name: 'Utility Station', need: ['Plastic Parts','ARC Alloy'] }
+        { name: 'Scrappy', level: '1/6', icon: '🐔', need: ['No requirements for this level'], focus: 'Start point for early upgrades' },
+        { name: 'Gunsmith', level: '1/3', icon: '🔫', need: ['Metal Parts', 'Rubber Parts'], focus: 'Weapons and gun crafting' },
+        { name: 'Gear Bench', level: '1/3', icon: '🧰', need: ['Plastic Parts', 'Fabric'], focus: 'Armor and support gear' },
+        { name: 'Medical Lab', level: '1/3', icon: '🩺', need: ['Fabric', 'ARC Alloy'], focus: 'Bandages, healing, support' },
+        { name: 'Utility Station', level: '1/3', icon: '🔌', need: ['Plastic Parts', 'ARC Alloy'], focus: 'Utility and electronics' },
+        { name: 'Explosives Station', level: '1/3', icon: '💣', need: ['Chemicals', 'ARC Alloy'], focus: 'Explosive tools and crafting' },
+        { name: 'Refiner', level: '1/3', icon: '♻️', need: ['Metal Parts', 'ARC Powercell'], focus: 'Refining higher-value materials' }
       ],
       mid: [
-        { name: 'Refiner', need: ['Metal Parts','ARC Powercell'] },
-        { name: 'Explosives Station', need: ['Chemicals','ARC Alloy'] },
-        { name: 'Medical Lab', need: ['Fabric','ARC Alloy'] },
-        { name: 'Gunsmith', need: ['Metal Parts','Rubber Parts'] }
+        { name: 'Gunsmith', level: '2/3', icon: '🔫', need: ['Metal Parts', 'Rubber Parts', 'Battery'], focus: 'Push better weapon builds' },
+        { name: 'Gear Bench', level: '2/3', icon: '🧰', need: ['Plastic Parts', 'Fabric', 'Wires'], focus: 'Raise gear floor' },
+        { name: 'Medical Lab', level: '2/3', icon: '🩺', need: ['Fabric', 'ARC Alloy', 'Chemicals'], focus: 'Reliable sustain and med prep' },
+        { name: 'Utility Station', level: '2/3', icon: '🔌', need: ['Plastic Parts', 'ARC Alloy', 'Magnets'], focus: 'Utility and support' },
+        { name: 'Explosives Station', level: '2/3', icon: '💣', need: ['Chemicals', 'ARC Alloy', 'Canister'], focus: 'Unlock more aggressive options' },
+        { name: 'Refiner', level: '2/3', icon: '♻️', need: ['Metal Parts', 'ARC Powercell', 'Battery'], focus: 'More advanced material flow' }
       ],
       endgame: [
-        { name: 'PvP Craft Loop', need: ['Shield Charger','Bandage','Stim','Medium Gun Parts'] },
-        { name: 'Weapon Upgrades', need: ['Battery','Magnets','Wires','Heavy Gun Parts'] },
-        { name: 'Support Refill', need: ['Bandage','Stim','Shield Charger'] },
-        { name: 'ARC Materials', need: ['ARC Alloy','ARC Powercell'] }
+        { name: 'PvP Craft Loop', level: 'Max', icon: '⚔️', need: ['Shield Charger', 'Bandage', 'Stim', 'Medium Gun Parts'], focus: 'PvP sustain and raid prep' },
+        { name: 'Weapon Upgrades', level: 'Max', icon: '🔧', need: ['Battery', 'Magnets', 'Wires', 'Heavy Gun Parts'], focus: 'Top-end weapons and upgrades' },
+        { name: 'Support Refill', level: 'Max', icon: '➕', need: ['Bandage', 'Stim', 'Shield Charger'], focus: 'Heals and support loop' },
+        { name: 'ARC Materials', level: 'Max', icon: '🪙', need: ['ARC Alloy', 'ARC Powercell'], focus: 'Premium material maintenance' }
       ],
       recovery: [
-        { name: 'Cheap Rebuild', need: ['Battery','Magnets','Wires'] },
-        { name: 'Safe Pocket Value', need: ['Battery','Stim'] },
-        { name: 'Medical Refill', need: ['Bandage','Stim'] },
-        { name: 'Weapon Restart', need: ['Light Gun Parts','Medium Gun Parts'] }
+        { name: 'Cheap Rebuild', level: 'Recovery', icon: '🛠️', need: ['Battery', 'Magnets', 'Wires'], focus: 'Get back on your feet' },
+        { name: 'Safe Pocket Value', level: 'Recovery', icon: '🎒', need: ['Battery', 'Stim'], focus: 'Protect guaranteed value' },
+        { name: 'Medical Refill', level: 'Recovery', icon: '🩹', need: ['Bandage', 'Stim'], focus: 'Restore sustain first' },
+        { name: 'Weapon Restart', level: 'Recovery', icon: '🎯', need: ['Light Gun Parts', 'Medium Gun Parts'], focus: 'Rebuild serviceable weapons' }
       ]
     };
 
@@ -620,12 +702,21 @@
       workbenchGrid.innerHTML = '';
       cards.forEach(cardData => {
         const card = document.createElement('div');
-        card.className = 'loot-item';
-        card.style.minHeight = '160px';
+        card.className = 'workbench-card';
         card.innerHTML = `
-          <div class="loot-icon">🏗️</div>
-          <strong>${cardData.name}</strong>
-          <small>${cardData.need.join(' • ')}</small>
+          <div class="workbench-top">
+            <div>
+              <div class="workbench-name">${cardData.name}</div>
+              <div class="workbench-level">Level ${cardData.level}</div>
+            </div>
+            <div class="workbench-icon">${cardData.icon}</div>
+          </div>
+          <div class="workbench-body">
+            <div class="workbench-focus">${cardData.focus}</div>
+            <div class="need-list">
+              ${cardData.need.map(need => `<span class="need-pill">${need}</span>`).join('')}
+            </div>
+          </div>
         `;
         workbenchGrid.appendChild(card);
       });
