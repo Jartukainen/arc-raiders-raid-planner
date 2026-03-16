@@ -6,494 +6,172 @@
   <title>ARC Raiders Raid Planner</title>
   <style>
     :root {
-      /* ARC Raiders inspired palette */
-      --arc-red: #ff3b3b;
-      --arc-orange: #ff7a00;
-      --arc-yellow: #ffd400;
-      --arc-green: #4dffb8;
-      --arc-blue: #33c7ff;
+      --arc-red: #ff4b4b;
+      --arc-orange: #ff8a00;
+      --arc-yellow: #ffd84d;
+      --arc-green: #56f0b7;
+      --arc-blue: #47cfff;
 
-      --bg: #0c1630;            /* night time Speranza */
-      --bg-2: #111f45;
-      --card: rgba(18,28,58,0.78);
-      --text: #e8eefc;
-      --muted: #9fb0d8;
-      --line: rgba(120,150,255,0.18);
-
-      --accent: #ff7a00;
-      --accent-2: #ffd400;
-      --good: #4dffb8;
-
-      --shadow: 0 20px 40px rgba(0,0,0,0.45);
+      --bg: #09152e;
+      --bg-2: #0f1d41;
+      --card: rgba(11, 24, 59, 0.92);
+      --card-2: rgba(18, 32, 76, 0.88);
+      --text: #eef4ff;
+      --muted: #b8c7ea;
+      --line: rgba(118, 148, 229, 0.22);
+      --input-bg: rgba(255,255,255,0.92);
+      --input-text: #101520;
+      --shadow: 0 18px 40px rgba(0,0,0,0.38);
       --radius: 18px;
     }
 
     * { box-sizing: border-box; }
-
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color: var(--text);
-
-      /* night Speranza background */
       background:
-        radial-gradient(circle at 20% 10%, rgba(51,199,255,0.18), transparent 40%),
-        radial-gradient(circle at 80% 20%, rgba(255,122,0,0.18), transparent 45%),
-        linear-gradient(180deg, #09122a, #0c1630 40%, #0e1b3d);
-
+        radial-gradient(circle at 20% 0%, rgba(71,207,255,0.12), transparent 35%),
+        radial-gradient(circle at 80% 15%, rgba(255,138,0,0.12), transparent 32%),
+        linear-gradient(180deg, #071126, var(--bg) 40%, var(--bg-2));
       min-height: 100vh;
     }
 
-    .app {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-
+    .app { max-width: 1240px; margin: 0 auto; padding: 20px; }
     .hero {
-      display: flex;
-      justify-content: space-between;
-      gap: 20px;
-      align-items: end;
-      margin-bottom: 18px;
-      flex-wrap: wrap;
+      display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 18px;
     }
+    h1 { margin: 0; font-size: clamp(34px, 4vw, 50px); line-height: 1; letter-spacing: -0.03em; }
+    .subtitle { margin-top: 8px; color: var(--muted); max-width: 760px; font-size: 16px; }
 
-    h1 {
-      margin: 0;
-      font-size: clamp(32px, 4vw, 48px);
-      line-height: 1;
-      letter-spacing: -0.03em;
-    }
-
-    .subtitle {
-      margin-top: 8px;
-      color: var(--muted);
-      max-width: 720px;
-      font-size: 15px;
-    }
-
-    .hero-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .button, button {
-      border: 0;
-      border-radius: 12px;
-      padding: 11px 16px;
-      background: var(--accent);
-      color: white;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: var(--shadow);
+    .hero-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    button {
+      border: 0; border-radius: 12px; padding: 11px 16px; font-weight: 800; cursor: pointer;
       transition: transform .15s ease, opacity .15s ease;
     }
+    button:hover { transform: translateY(-1px); }
+    .primary-btn { background: var(--arc-orange); color: white; box-shadow: var(--shadow); }
+    .secondary-btn { background: rgba(255,255,255,0.9); color: #17203a; }
+    .ghost-btn { background: rgba(255,255,255,0.12); color: var(--text); border: 1px solid var(--line); }
 
-    .button:hover, button:hover { transform: translateY(-1px); }
-    .button.secondary {
-      background: white;
-      color: var(--text);
-      border: 1px solid var(--line);
-      box-shadow: none;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 390px minmax(0, 1fr);
-      gap: 18px;
-      align-items: start;
-    }
-
+    .layout { display: grid; grid-template-columns: 390px minmax(0,1fr); gap: 18px; align-items: start; }
     .card {
-      background: linear-gradient(180deg, rgba(18,28,58,0.88), rgba(12,22,48,0.92));
-      border: 1px solid rgba(120,150,255,0.18);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-    }
-
-    /* ARC rainbow accent line */
-    .card::before {
-      content:"";
-      display:block;
-      height:3px;
-      background:linear-gradient(90deg,var(--arc-red),var(--arc-orange),var(--arc-yellow),var(--arc-green),var(--arc-blue));
-      border-top-left-radius:var(--radius);
-      border-top-right-radius:var(--radius);
-    }
-
-    .card-inner { padding:18px; }
-
-    .card-old {
-      background: var(--card);
+      background: linear-gradient(180deg, var(--card), var(--card-2));
       border: 1px solid var(--line);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      backdrop-filter: blur(8px);
+      overflow: hidden;
     }
-
+    .card::before {
+      content: ""; display: block; height: 3px;
+      background: linear-gradient(90deg, var(--arc-red), var(--arc-orange), var(--arc-yellow), var(--arc-green), var(--arc-blue));
+    }
     .card-inner { padding: 18px; }
-
-    .section-title {
-      margin: 0 0 14px;
-      font-size: 24px;
-      letter-spacing: -0.02em;
-    }
-
+    .section-title { margin: 0 0 14px; font-size: 28px; letter-spacing: -0.02em; color: var(--text); }
     .stack { display: grid; gap: 14px; }
 
     label {
-      display: block;
-      font-size: 13px;
-      color: var(--muted);
-      margin: 0 0 7px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .04em;
+      display: block; margin: 0 0 8px; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: #dfe8ff;
     }
-
     input, select {
-      width: 100%;
-      border-radius: 12px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.88);
-      color: var(--text);
-      padding: 12px 14px;
-      font-size: 16px;
-      outline: none;
+      width: 100%; border-radius: 12px; border: 1px solid rgba(255,255,255,0.16);
+      background: var(--input-bg); color: var(--input-text); padding: 12px 14px; font-size: 16px; outline: none;
     }
+    input:focus, select:focus { box-shadow: 0 0 0 4px rgba(71,207,255,0.15); border-color: rgba(71,207,255,0.4); }
 
-    input:focus, select:focus {
-      border-color: rgba(255,122,0,.55);
-      box-shadow: 0 0 0 4px rgba(255,122,0,.12);
-    }
-
-    .preset-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0,1fr));
-      gap: 10px;
-    }
-
+    .profile-row { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; }
+    .preset-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
     .preset {
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.76);
-      border-radius: 14px;
-      padding: 12px;
-      text-align: left;
-      cursor: pointer;
-      transition: transform .15s ease, border-color .15s ease, background .15s ease;
+      border: 1px solid var(--line); background: rgba(255,255,255,0.06); color: var(--text); border-radius: 14px; padding: 12px; text-align: left;
     }
+    .preset.active { background: rgba(255,138,0,0.16); border-color: rgba(255,138,0,0.45); }
+    .preset strong { display: block; margin-bottom: 4px; font-size: 15px; }
+    .preset span { display: block; color: var(--muted); font-size: 12px; line-height: 1.35; }
 
-    .preset:hover { transform: translateY(-1px); }
-    .preset.active {
-      border-color: rgba(255,122,0,.5);
-      background: rgba(255,247,237,.95);
-      box-shadow: 0 0 0 3px rgba(255,122,0,.08);
-    }
+    .view-toggle { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+    .toggle-btn { background: rgba(255,255,255,0.16); color: var(--text); border: 1px solid var(--line); }
+    .toggle-btn.active { background: var(--arc-orange); color: white; border-color: transparent; }
 
-    .preset strong { display: block; font-size: 15px; margin-bottom: 4px; }
-    .preset span { color: var(--muted); font-size: 12px; line-height: 1.35; display: block; }
-
-    .view-toggle {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 14px;
-      flex-wrap: wrap;
-    }
-
-    .toggle-btn {
-      padding: 9px 13px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.7);
-      color: var(--text);
-      cursor: pointer;
-      font-weight: 700;
-    }
-
-    .toggle-btn.active {
-      background: var(--accent);
-      color: #fff;
-      border-color: transparent;
-    }
-
-    .status-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: start;
-      flex-wrap: wrap;
-      margin-bottom: 14px;
-    }
-
+    .status-row { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 14px; }
     .status-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: .05em;
-      text-transform: uppercase;
-      background: rgba(255,255,255,.8);
-      border: 1px solid var(--line);
+      display: inline-flex; align-items: center; gap: 8px; padding: 9px 13px; border-radius: 999px;
+      background: rgba(255,255,255,0.9); color: #17302a; font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: .05em;
     }
+    .status-chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--arc-green); }
 
-    .status-chip .dot {
-      width: 8px; height: 8px; border-radius: 50%; background: var(--good);
-    }
+    .snapshot-grid { display: grid; grid-template-columns: 1.02fr .98fr; gap: 14px; }
+    .mini-card { border: 1px solid var(--line); border-radius: 16px; padding: 14px; background: rgba(255,255,255,0.06); }
+    .mini-card h3 { margin: 0 0 8px; font-size: 13px; color: #dfe8ff; text-transform: uppercase; letter-spacing: .06em; }
 
-    .snapshot-grid {
-      display: grid;
-      grid-template-columns: 1.05fr .95fr;
-      gap: 14px;
-    }
-
-    .mini-card {
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 14px;
-      background: rgba(255,255,255,.68);
-    }
-
-    .mini-card h3 {
-      margin: 0 0 8px;
-      font-size: 14px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .05em;
-    }
-
-    .route-box {
-      min-height: 260px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
+    .route-box { min-height: 292px; display: flex; flex-direction: column; justify-content: space-between; }
     .route-visual {
-      border-radius: 14px;
-      border: 1px dashed rgba(255,122,0,.35);
-      background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,248,240,.88));
-      padding: 16px;
-      margin-top: 12px;
+      border-radius: 14px; border: 1px dashed rgba(255,216,77,0.4); background: rgba(255,255,255,0.05); padding: 14px; margin-top: 12px;
     }
-
-    .route-step {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-      font-weight: 700;
-    }
-
+    .route-step { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; font-weight: 800; color: var(--text); }
     .route-step:last-child { margin-bottom: 0; }
-
     .route-num {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: var(--accent);
-      color: #fff;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
-      flex: 0 0 auto;
+      width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+      background: var(--arc-orange); color: white; font-size: 13px; flex: 0 0 auto;
     }
 
-    .priority-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-    }
-
+    .priority-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
     .loot-item {
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.82);
-      border-radius: 16px;
-      padding: 12px;
-      text-align: center;
-      min-height: 138px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 8px;
+      border: 1px solid var(--line); background: rgba(255,255,255,0.08); border-radius: 16px; padding: 12px; text-align: center;
+      min-height: 140px; display: flex; flex-direction: column; justify-content: center; gap: 8px;
     }
-
     .loot-icon {
-      width: 58px;
-      height: 58px;
-      border-radius: 18px;
-      margin: 0 auto;
-      display: grid;
-      place-items: center;
-      font-size: 26px;
-      background: linear-gradient(135deg, var(--arc-blue), var(--arc-green));
-      border: 1px solid rgba(255,255,255,.2);
-      box-shadow: 0 6px 14px rgba(0,0,0,.35);
-      overflow: hidden;
+      width: 58px; height: 58px; border-radius: 18px; margin: 0 auto; display: grid; place-items: center; overflow: hidden;
+      background: linear-gradient(135deg, var(--arc-blue), var(--arc-green)); border: 1px solid rgba(255,255,255,0.18);
+      font-size: 26px; box-shadow: 0 6px 14px rgba(0,0,0,0.28);
     }
+    .loot-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .loot-item strong { font-size: 14px; line-height: 1.2; color: var(--text); }
+    .loot-item small { color: var(--muted); font-size: 11px; line-height: 1.35; }
 
-    .loot-icon img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .image-library-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .image-card {
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 12px;
-      background: rgba(255,255,255,.06);
-    }
-
-    .image-card .mini-preview {
-      width: 72px;
-      height: 72px;
-      margin: 0 auto 10px;
-      border-radius: 18px;
-      overflow: hidden;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(135deg, var(--arc-blue), var(--arc-green));
-      border: 1px solid rgba(255,255,255,.18);
-    }
-
-    .image-card .mini-preview img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .image-card input[type="file"] {
-      width: 100%;
-      font-size: 12px;
-      padding: 8px;
-      border-radius: 10px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.9);
-      color: #111;
-    }
-
-    .tiny-btn {
-      margin-top: 8px;
-      width: 100%;
-      padding: 8px 10px;
-      border-radius: 10px;
-      background: rgba(255,255,255,.12);
-      color: var(--text);
-      border: 1px solid var(--line);
-      box-shadow: none;
-      font-weight: 700;
-    }
-
-    .loot-item strong {
-      font-size: 14px;
-      line-height: 1.2;
-    }
-
-    .loot-item small {
-      color: var(--muted);
-      font-size: 11px;
-      line-height: 1.35;
-    }
-
-    .pill-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
+    .pill-row { display: flex; flex-wrap: wrap; gap: 8px; }
     .pill {
-      background: linear-gradient(90deg,var(--arc-red),var(--arc-orange),var(--arc-yellow));
-      color: #111;
-      border-radius: 999px;
-      padding: 7px 11px;
-      font-size: 12px;
-      font-weight: 800;
+      background: linear-gradient(90deg, var(--arc-red), var(--arc-orange), var(--arc-yellow)); color: #111; border-radius: 999px;
+      padding: 7px 11px; font-size: 12px; font-weight: 900;
     }
 
     .summary-box {
-      border-radius: 16px;
-      background: rgba(255,248,240,.9);
-      border: 1px solid rgba(255,122,0,.14);
-      padding: 14px;
-      white-space: pre-wrap;
-      font-size: 13px;
-      line-height: 1.45;
-      color: #3c342d;
+      border-radius: 16px; background: rgba(255,255,255,0.08); border: 1px solid var(--line); padding: 14px;
+      white-space: pre-wrap; font-size: 13px; line-height: 1.5; color: var(--text);
     }
+    .footer-note { margin-top: 12px; color: var(--muted); font-size: 13px; }
 
-    .footer-note {
-      margin-top: 12px;
-      color: var(--muted);
-      font-size: 13px;
+    .image-library-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .image-card { border: 1px solid var(--line); border-radius: 16px; padding: 12px; background: rgba(255,255,255,0.06); }
+    .mini-preview {
+      width: 72px; height: 72px; margin: 0 auto 10px; border-radius: 18px; overflow: hidden; display: grid; place-items: center;
+      background: linear-gradient(135deg, var(--arc-blue), var(--arc-green)); border: 1px solid rgba(255,255,255,0.18); font-size: 28px;
     }
+    .mini-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .image-card input[type=file] { width: 100%; font-size: 12px; padding: 8px; border-radius: 10px; }
+    .tiny-btn { margin-top: 8px; width: 100%; padding: 8px 10px; border-radius: 10px; }
 
     .glance-only { display: none; }
-
     body.glance .editor-card,
     body.glance .summary-card,
-    body.glance .hero-actions .secondary,
-    body.glance .footer-note {
-      display: none;
-    }
-
-    body.glance .layout {
-      grid-template-columns: 1fr;
-    }
-
-    body.glance .glance-only { display: inline-flex; }
-
-    body.glance .snapshot-card .card-inner {
-      padding: 18px;
-    }
-
-    body.glance .priority-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    body.glance .snapshot-grid {
-      grid-template-columns: 1fr;
-    }
+    body.glance .card.images-card,
+    body.glance .card.profile-card,
+    body.glance .card.stash-card,
+    body.glance .hero-actions .secondary-btn { display: none; }
+    body.glance .layout { grid-template-columns: 1fr; }
+    body.glance .snapshot-grid { grid-template-columns: 1fr; }
+    body.glance .priority-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
 
     @media (max-width: 980px) {
-      .layout,
-      .snapshot-grid {
-        grid-template-columns: 1fr;
-      }
-      .priority-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
+      .layout, .snapshot-grid { grid-template-columns: 1fr; }
+      .priority-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .image-library-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
     }
-
     @media (max-width: 640px) {
       .app { padding: 14px; }
-      .preset-grid { grid-template-columns: 1fr; }
-      .priority-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .image-library-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .hero { align-items: start; }
+      .preset-grid, .profile-row { grid-template-columns: 1fr; }
+      .priority-grid, .image-library-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .section-title { font-size: 24px; }
       h1 { font-size: 34px; }
-      .section-title { font-size: 22px; }
-      .loot-item { min-height: 124px; }
-    }
-      .preset-grid { grid-template-columns: 1fr; }
-      .priority-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .hero { align-items: start; }
-      h1 { font-size: 34px; }
-      .section-title { font-size: 22px; }
-      .loot-item { min-height: 124px; }
     }
   </style>
 </head>
@@ -505,8 +183,8 @@
         <div class="subtitle">Fast second-screen helper for Xbox, phone, or laptop. Pick a package, choose a spawn, and get a clear 5–10 second loot plan.</div>
       </div>
       <div class="hero-actions">
-        <button id="copyBtn">Copy Raid Plan</button>
-        <button class="button secondary" id="modeBtn">Glance Mode</button>
+        <button class="primary-btn" id="copyBtn">Copy Raid Plan</button>
+        <button class="secondary-btn" id="modeBtn">Glance Mode</button>
       </div>
     </div>
 
@@ -523,10 +201,10 @@
 
           <div>
             <label for="profileSelect">Profile</label>
-            <div style="display:grid; grid-template-columns: 1fr auto auto; gap:8px;">
+            <div class="profile-row">
               <select id="profileSelect"></select>
-              <button type="button" class="button secondary" id="newProfileBtn">New</button>
-              <button type="button" class="button secondary" id="deleteProfileBtn">Delete</button>
+              <button type="button" class="secondary-btn" id="newProfileBtn">New</button>
+              <button type="button" class="secondary-btn" id="deleteProfileBtn">Delete</button>
             </div>
           </div>
 
@@ -561,7 +239,7 @@
             <select id="profileStage">
               <option value="early">Season Start / Workbench Build</option>
               <option value="mid">Mid Progression</option>
-              <option value="endgame" selected>Endgame / PvP</option>
+              <option value="endgame">Endgame / PvP</option>
               <option value="recovery">Recovery After Losses</option>
             </select>
           </div>
@@ -582,7 +260,7 @@
             <div class="mini-card route-box">
               <div>
                 <h3>Route</h3>
-                <div id="spawnName" style="font-size:28px; font-weight:800; letter-spacing:-0.03em;"></div>
+                <div id="spawnName" style="font-size:28px; font-weight:900; letter-spacing:-0.03em;"></div>
                 <div id="routeSummary" style="margin-top:8px; color:var(--muted); line-height:1.45;"></div>
               </div>
               <div class="route-visual" id="routeVisual"></div>
@@ -605,29 +283,25 @@
             </div>
           </div>
 
-          <div class="snapshot-grid" style="margin-top:14px; grid-template-columns: 1fr;">
+          <div style="margin-top:14px;">
             <div class="mini-card">
               <h3>Weapon Goal</h3>
-              <div id="weaponGoalText" style="font-size:24px; font-weight:800; letter-spacing:-0.02em;"></div>
+              <div id="weaponGoalText" style="font-size:24px; font-weight:900; letter-spacing:-0.02em;"></div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="card" style="margin-top:18px;">
+    <div class="card profile-card" style="margin-top:18px;">
       <div class="card-inner">
         <div class="section-title" style="font-size:22px;">Profile & Workbenches</div>
         <div class="snapshot-grid" style="grid-template-columns: 1fr 1fr;">
           <div class="mini-card">
             <h3>Player Profile</h3>
-            <div style="display:grid; gap:12px;">
-              <div id="profileMeta" style="color:var(--muted); line-height:1.45; font-size:14px;"></div>
-              <div>
-                <label style="margin-bottom:10px;">Stash Highlights</label>
-                <div id="stashHighlights" class="pill-row"></div>
-              </div>
-            </div>
+            <div id="profileMeta" style="color:var(--muted); line-height:1.45; font-size:14px; margin-bottom:12px;"></div>
+            <label style="margin-bottom:10px;">Stash Highlights</label>
+            <div id="stashHighlights" class="pill-row"></div>
           </div>
           <div class="mini-card">
             <h3>Workbench Focus</h3>
@@ -637,17 +311,17 @@
       </div>
     </div>
 
-    <div class="card" style="margin-top:18px;">
+    <div class="card stash-card" style="margin-top:18px;">
       <div class="card-inner">
         <div class="section-title" style="font-size:22px;">Stash Tracker</div>
         <div id="stashGrid" class="priority-grid" style="grid-template-columns: repeat(4, minmax(0,1fr));"></div>
       </div>
     </div>
 
-    <div class="card" style="margin-top:18px;">
+    <div class="card images-card" style="margin-top:18px;">
       <div class="card-inner">
         <div class="section-title" style="font-size:22px;">Item Image Library</div>
-        <div class="footer-note" style="margin-top:0; margin-bottom:14px;">Use your own item screenshots or cropped images here. They are saved locally in your browser and will replace the emoji icons in the planner.</div>
+        <div class="footer-note" style="margin-top:0; margin-bottom:14px;">Upload your own item screenshots or cropped images. They are saved locally in your browser and replace emoji icons in the planner.</div>
         <div id="imageLibraryGrid" class="image-library-grid"></div>
       </div>
     </div>
@@ -664,116 +338,110 @@
   <script>
     const packageData = {
       loot: {
-        label: "Loot Run",
-        short: "Low-risk refill run. Avoid fights and extract early.",
-        status: "LOOT MODE",
-        targets: ["Battery", "Magnets", "Wires", "Crude Oil", "Canister"],
-        safePocket: ["Battery", "Magnets"],
-        consumables: ["Bandage", "Stim"],
+        label: 'Loot Run',
+        short: 'Low-risk refill run. Avoid fights and extract early.',
+        status: 'LOOT MODE',
+        targets: ['Battery','Magnets','Wires','Crude Oil','Canister'],
+        safePocket: ['Battery','Magnets'],
+        consumables: ['Bandage','Stim']
       },
       rebuild: {
-        label: "Rebuild",
-        short: "Best after losing gear. Prioritize guaranteed value over PvP.",
-        status: "REBUILD MODE",
-        targets: ["Battery", "Magnets", "Wires", "Bandage"],
-        safePocket: ["Battery", "Magnets", "Stim"],
-        consumables: ["Bandage", "Stim"],
+        label: 'Rebuild',
+        short: 'Best after losing gear. Prioritize guaranteed value over PvP.',
+        status: 'REBUILD MODE',
+        targets: ['Battery','Magnets','Wires','Bandage'],
+        safePocket: ['Battery','Magnets','Stim'],
+        consumables: ['Bandage','Stim']
       },
       pvp: {
-        label: "PvP Push",
-        short: "Go in geared. Sustain first, then pressure.",
-        status: "PVP READY",
-        targets: ["Shield Charger", "Bandage", "Stim", "Medium Gun Parts"],
-        safePocket: ["Stim", "Bandage"],
-        consumables: ["Bandage", "Shield Charger", "Stim"],
+        label: 'PvP Push',
+        short: 'Go in geared. Sustain first, then pressure.',
+        status: 'PVP READY',
+        targets: ['Shield Charger','Bandage','Stim','Medium Gun Parts'],
+        safePocket: ['Stim','Bandage'],
+        consumables: ['Bandage','Shield Charger','Stim']
       },
       trials: {
-        label: "Trials",
-        short: "Mobility and sustain before greed.",
-        status: "TRIALS READY",
-        targets: ["Stim", "Bandage", "Shield Charger", "Battery"],
-        safePocket: ["Stim", "Bandage"],
-        consumables: ["Stim", "Bandage", "Shield Charger"],
+        label: 'Trials',
+        short: 'Mobility and sustain before greed.',
+        status: 'TRIALS READY',
+        targets: ['Stim','Bandage','Shield Charger','Battery'],
+        safePocket: ['Stim','Bandage'],
+        consumables: ['Stim','Bandage','Shield Charger']
       },
       weapon: {
-        label: "Weapon Upgrade",
-        short: "Farm upgrade parts and get out clean.",
-        status: "UPGRADE RUN",
-        targets: ["Medium Gun Parts", "Heavy Gun Parts", "Battery", "Magnets"],
-        safePocket: ["Battery", "Magnets"],
-        consumables: ["Bandage", "Stim"],
-      },
+        label: 'Weapon Upgrade',
+        short: 'Farm upgrade parts and get out clean.',
+        status: 'UPGRADE RUN',
+        targets: ['Medium Gun Parts','Heavy Gun Parts','Battery','Magnets'],
+        safePocket: ['Battery','Magnets'],
+        consumables: ['Bandage','Stim']
+      }
     };
 
     const spawnData = {
       dam: {
-        label: "Dam",
-        routeSummary: "Industrial path with strong oil and weapon-part value.",
-        steps: ["Spawn in", "Battery / oil line", "Weapon parts", "Extract"],
-        boosts: ["Battery", "Crude Oil", "Medium Gun Parts", "Heavy Gun Parts"],
+        label: 'Dam',
+        routeSummary: 'Industrial path with strong oil and weapon-part value.',
+        steps: ['Spawn in','Battery / oil line','Weapon parts','Extract'],
+        boosts: ['Battery','Crude Oil','Medium Gun Parts','Heavy Gun Parts']
       },
       spaceport: {
-        label: "Spaceport",
-        routeSummary: "Best electronics loop for quick component recovery.",
-        steps: ["Spawn in", "Electronics loop", "Containers", "Extract"],
-        boosts: ["Magnets", "Wires", "Battery", "Medium Gun Parts"],
+        label: 'Spaceport',
+        routeSummary: 'Best electronics loop for quick component recovery.',
+        steps: ['Spawn in','Electronics loop','Containers','Extract'],
+        boosts: ['Magnets','Wires','Battery','Medium Gun Parts']
       },
       bluegate: {
-        label: "Blue Gate",
-        routeSummary: "Utility path with reliable components and shield loot.",
-        steps: ["Spawn in", "Utility rooms", "Shield path", "Extract"],
-        boosts: ["Magnets", "Wires", "Shield Charger", "Light Gun Parts"],
+        label: 'Blue Gate',
+        routeSummary: 'Utility path with reliable components and shield loot.',
+        steps: ['Spawn in','Utility rooms','Shield path','Extract'],
+        boosts: ['Magnets','Wires','Shield Charger','Light Gun Parts']
       },
       stella: {
-        label: "Stella Montis",
-        routeSummary: "Medical-focused route for sustain and safer exits.",
-        steps: ["Spawn in", "Medical path", "Support loot", "Extract"],
-        boosts: ["Bandage", "Shield Charger", "Stim", "Canister"],
+        label: 'Stella Montis',
+        routeSummary: 'Medical-focused route for sustain and safer exits.',
+        steps: ['Spawn in','Medical path','Support loot','Extract'],
+        boosts: ['Bandage','Shield Charger','Stim','Canister']
       },
       buried: {
-        label: "Buried City",
-        routeSummary: "High risk, better for brave farming and fast resets.",
-        steps: ["Spawn in", "Rare loot line", "Quick check", "Extract fast"],
-        boosts: ["Heavy Gun Parts", "Bandage", "Crude Oil"],
-      },
+        label: 'Buried City',
+        routeSummary: 'High risk, better for brave farming and fast resets.',
+        steps: ['Spawn in','Rare loot line','Quick check','Extract fast'],
+        boosts: ['Heavy Gun Parts','Bandage','Crude Oil']
+      }
     };
 
     const itemMeta = {
-      "Battery": { icon: "🔋", hint: "workshop + craft" },
-      "Magnets": { icon: "🧲", hint: "electronics" },
-      "Wires": { icon: "🧵", hint: "utility + craft" },
-      "Crude Oil": { icon: "🛢️", hint: "fuel + craft" },
-      "Canister": { icon: "🧴", hint: "sustain / fuel" },
-      "Bandage": { icon: "🩹", hint: "healing" },
-      "Shield Charger": { icon: "🛡️", hint: "shield sustain" },
-      "Stim": { icon: "💉", hint: "stamina / movement" },
-      "Medium Gun Parts": { icon: "🔧", hint: "weapon upgrade" },
-      "Heavy Gun Parts": { icon: "⚙️", hint: "high tier weapon" },
-      "Light Gun Parts": { icon: "🎯", hint: "backup weapon" },
-      "Plastic Parts": { icon: "🧰", hint: "gear bench" },
-      "Fabric": { icon: "🧻", hint: "medical / bench" },
-      "Metal Parts": { icon: "🔩", hint: "gunsmith / refiner" },
-      "Rubber Parts": { icon: "🛞", hint: "gunsmith" },
-      "ARC Alloy": { icon: "🪙", hint: "utility / med / explosives" },
-      "Chemicals": { icon: "🧪", hint: "explosives / med" },
-      "ARC Powercell": { icon: "🔌", hint: "refiner / shields" },
-      "Aphelion Rifle": { icon: "⚡", hint: "legendary rifle" },
-      "Arpeggio IV": { icon: "🎼", hint: "burst rifle" },
-      "Anvil IV": { icon: "🔨", hint: "heavy pistol" },
-      "Il Toro IV": { icon: "🐂", hint: "power rifle" },
-      "Stitcher IV": { icon: "✂️", hint: "trusted all-rounder" },
-      "Equalizer IV": { icon: "🎚️", hint: "smg option" },
-      "Mistral IV": { icon: "🌪️", hint: "mobile weapon" },
+      'Battery': { icon: '🔋', hint: 'workshop + craft' },
+      'Magnets': { icon: '🧲', hint: 'electronics' },
+      'Wires': { icon: '🧵', hint: 'utility + craft' },
+      'Crude Oil': { icon: '🛢️', hint: 'fuel + craft' },
+      'Canister': { icon: '🧴', hint: 'sustain / fuel' },
+      'Bandage': { icon: '🩹', hint: 'healing' },
+      'Shield Charger': { icon: '🛡️', hint: 'shield sustain' },
+      'Stim': { icon: '💉', hint: 'stamina / movement' },
+      'Medium Gun Parts': { icon: '🔧', hint: 'weapon upgrade' },
+      'Heavy Gun Parts': { icon: '⚙️', hint: 'high tier weapon' },
+      'Light Gun Parts': { icon: '🎯', hint: 'backup weapon' },
+      'Plastic Parts': { icon: '🧰', hint: 'gear bench' },
+      'Fabric': { icon: '🧻', hint: 'medical / bench' },
+      'Metal Parts': { icon: '🔩', hint: 'gunsmith / refiner' },
+      'Rubber Parts': { icon: '🛞', hint: 'gunsmith' },
+      'ARC Alloy': { icon: '🪙', hint: 'utility / med / explosives' },
+      'Chemicals': { icon: '🧪', hint: 'explosives / med' },
+      'ARC Powercell': { icon: '🔌', hint: 'refiner / shields' },
+      'Aphelion Rifle': { icon: '⚡', hint: 'legendary rifle' },
+      'Arpeggio IV': { icon: '🎼', hint: 'burst rifle' },
+      'Anvil IV': { icon: '🔨', hint: 'heavy pistol' },
+      'Il Toro IV': { icon: '🐂', hint: 'power rifle' },
+      'Stitcher IV': { icon: '✂️', hint: 'trusted all-rounder' },
+      'Equalizer IV': { icon: '🎚️', hint: 'smg option' },
+      'Mistral IV': { icon: '🌪️', hint: 'mobile weapon' }
     };
 
     const weaponOptions = [
-      'Stitcher IV',
-      'Il Toro IV',
-      'Equalizer IV',
-      'Arpeggio IV',
-      'Anvil IV',
-      'Mistral IV',
-      'Aphelion Rifle'
+      'Stitcher IV','Il Toro IV','Equalizer IV','Arpeggio IV','Anvil IV','Mistral IV','Aphelion Rifle'
     ];
 
     const stashItems = [
@@ -781,6 +449,33 @@
       'Medium Gun Parts','Heavy Gun Parts','Light Gun Parts','Plastic Parts','Fabric','Metal Parts',
       'Rubber Parts','ARC Alloy','Chemicals','ARC Powercell'
     ];
+
+    const workbenchProfiles = {
+      early: [
+        { name: 'Gunsmith', need: ['Metal Parts','Rubber Parts'] },
+        { name: 'Gear Bench', need: ['Plastic Parts','Fabric'] },
+        { name: 'Medical Lab', need: ['Fabric','ARC Alloy'] },
+        { name: 'Utility Station', need: ['Plastic Parts','ARC Alloy'] }
+      ],
+      mid: [
+        { name: 'Refiner', need: ['Metal Parts','ARC Powercell'] },
+        { name: 'Explosives Station', need: ['Chemicals','ARC Alloy'] },
+        { name: 'Medical Lab', need: ['Fabric','ARC Alloy'] },
+        { name: 'Gunsmith', need: ['Metal Parts','Rubber Parts'] }
+      ],
+      endgame: [
+        { name: 'PvP Craft Loop', need: ['Shield Charger','Bandage','Stim','Medium Gun Parts'] },
+        { name: 'Weapon Upgrades', need: ['Battery','Magnets','Wires','Heavy Gun Parts'] },
+        { name: 'Support Refill', need: ['Bandage','Stim','Shield Charger'] },
+        { name: 'ARC Materials', need: ['ARC Alloy','ARC Powercell'] }
+      ],
+      recovery: [
+        { name: 'Cheap Rebuild', need: ['Battery','Magnets','Wires'] },
+        { name: 'Safe Pocket Value', need: ['Battery','Stim'] },
+        { name: 'Medical Refill', need: ['Bandage','Stim'] },
+        { name: 'Weapon Restart', need: ['Light Gun Parts','Medium Gun Parts'] }
+      ]
+    };
 
     const defaultProfiles = {
       Jartukainen: {
@@ -798,35 +493,6 @@
           'ARC Alloy': 3, Chemicals: 2, 'ARC Powercell': 1
         }
       }
-    };
-
-    const defaultItemImages = JSON.parse(localStorage.getItem('arcItemImages') || '{}');
-
-    const workbenchProfiles = {
-      early: [
-        { name: 'Gunsmith', need: ['Metal Parts', 'Rubber Parts'] },
-        { name: 'Gear Bench', need: ['Plastic Parts', 'Fabric'] },
-        { name: 'Medical Lab', need: ['Fabric', 'ARC Alloy'] },
-        { name: 'Utility Station', need: ['Plastic Parts', 'ARC Alloy'] },
-      ],
-      mid: [
-        { name: 'Refiner', need: ['Metal Parts', 'ARC Powercell'] },
-        { name: 'Explosives Station', need: ['Chemicals', 'ARC Alloy'] },
-        { name: 'Medical Lab', need: ['Fabric', 'ARC Alloy'] },
-        { name: 'Gunsmith', need: ['Metal Parts', 'Rubber Parts'] },
-      ],
-      endgame: [
-        { name: 'PvP Craft Loop', need: ['Shield Charger', 'Bandage', 'Stim', 'Medium Gun Parts'] },
-        { name: 'Weapon Upgrades', need: ['Battery', 'Magnets', 'Wires', 'Heavy Gun Parts'] },
-        { name: 'Support Refill', need: ['Bandage', 'Stim', 'Shield Charger'] },
-        { name: 'ARC Materials', need: ['ARC Alloy', 'ARC Powercell'] },
-      ],
-      recovery: [
-        { name: 'Cheap Rebuild', need: ['Battery', 'Magnets', 'Wires'] },
-        { name: 'Safe Pocket Value', need: ['Battery', 'Stim'] },
-        { name: 'Medical Refill', need: ['Bandage', 'Stim'] },
-        { name: 'Weapon Restart', need: ['Light Gun Parts', 'Medium Gun Parts'] },
-      ]
     };
 
     const packageSelect = document.getElementById('package');
@@ -852,78 +518,45 @@
     const stashGrid = document.getElementById('stashGrid');
     const stashHighlights = document.getElementById('stashHighlights');
     const profileMeta = document.getElementById('profileMeta');
-    const summaryBox = document.getElementById('summaryBox');
     const imageLibraryGrid = document.getElementById('imageLibraryGrid');
+    const summaryBox = document.getElementById('summaryBox');
     const copyBtn = document.getElementById('copyBtn');
     const modeBtn = document.getElementById('modeBtn');
 
-    let profiles = JSON.parse(localStorage.getItem('arcProfiles') || 'null') || structuredClone(defaultProfiles);
-    let itemImages = defaultItemImages;
+    let profiles = JSON.parse(localStorage.getItem('arcProfiles') || 'null') || JSON.parse(JSON.stringify(defaultProfiles));
+    let itemImages = JSON.parse(localStorage.getItem('arcItemImages') || '{}');
+
+    function saveProfiles() {
+      localStorage.setItem('arcProfiles', JSON.stringify(profiles));
+    }
+
+    function saveImages() {
+      localStorage.setItem('arcItemImages', JSON.stringify(itemImages));
+    }
 
     function populateControls() {
       packageSelect.innerHTML = '';
       spawnSelect.innerHTML = '';
       weaponPreset.innerHTML = '';
-      presetGrid.innerHTML = '';
       profileSelect.innerHTML = '';
+      presetGrid.innerHTML = '';
 
       Object.entries(packageData).forEach(([key, pkg]) => {
         const opt = document.createElement('option');
-        opt.value = key;
-        opt.textContent = pkg.label;
-        packageSelect.appendChild(opt);
+        opt.value = key; opt.textContent = pkg.label; packageSelect.appendChild(opt);
       });
-
       Object.entries(spawnData).forEach(([key, spawn]) => {
         const opt = document.createElement('option');
-        opt.value = key;
-        opt.textContent = spawn.label;
-        spawnSelect.appendChild(opt);
+        opt.value = key; opt.textContent = spawn.label; spawnSelect.appendChild(opt);
       });
-
       weaponOptions.forEach(weapon => {
         const opt = document.createElement('option');
-        opt.value = weapon;
-        opt.textContent = weapon;
-        weaponPreset.appendChild(opt);
+        opt.value = weapon; opt.textContent = weapon; weaponPreset.appendChild(opt);
       });
-
-      Object.entries(packageData).forEach(([key, pkg]) => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'preset';
-        btn.dataset.preset = key;
-        btn.innerHTML = `<strong>${pkg.label}</strong><span>${pkg.short}</span>`;
-        btn.addEventListener('click', () => {
-          packageSelect.value = key;
-          persistCurrentProfile();
-          updateView();
-        });
-        presetGrid.appendChild(btn);
-      });
-
       Object.keys(profiles).forEach(name => {
         const opt = document.createElement('option');
-        opt.value = name;
-        opt.textContent = name;
-        profileSelect.appendChild(opt);
+        opt.value = name; opt.textContent = name; profileSelect.appendChild(opt);
       });
-    });
-
-      Object.entries(spawnData).forEach(([key, spawn]) => {
-        const opt = document.createElement('option');
-        opt.value = key;
-        opt.textContent = spawn.label;
-        spawnSelect.appendChild(opt);
-      });
-
-      weaponOptions.forEach(weapon => {
-        const opt = document.createElement('option');
-        opt.value = weapon;
-        opt.textContent = weapon;
-        weaponPreset.appendChild(opt);
-      });
-
       Object.entries(packageData).forEach(([key, pkg]) => {
         const btn = document.createElement('button');
         btn.type = 'button';
@@ -938,9 +571,9 @@
       });
     }
 
-    function getPriorityList(pkg, spawn) {
-      const combined = [...spawn.boosts, ...pkg.targets];
-      return [...new Set(combined)].slice(0, 6);
+    function renderIconContent(item) {
+      const meta = itemMeta[item] || { icon: '📦' };
+      return itemImages[item] ? `<img src="${itemImages[item]}" alt="${item}" />` : meta.icon;
     }
 
     function renderRoute(steps) {
@@ -963,10 +596,8 @@
       });
     }
 
-    function renderIconContent(item) {
-      const meta = itemMeta[item] || { icon: '📦', hint: 'loot' };
-      const img = itemImages[item];
-      return img ? `<img src="${img}" alt="${item}" />` : meta.icon;
+    function getPriorityList(pkg, spawn) {
+      return [...new Set([...spawn.boosts, ...pkg.targets])].slice(0, 6);
     }
 
     function renderPriority(items) {
@@ -981,39 +612,6 @@
           <small>${meta.hint}</small>
         `;
         priorityGrid.appendChild(card);
-      });
-    }
-
-    function renderImageLibrary() {
-      imageLibraryGrid.innerHTML = '';
-      stashItems.forEach(item => {
-        const meta = itemMeta[item] || { icon: '📦', hint: 'loot' };
-        const wrapper = document.createElement('div');
-        wrapper.className = 'image-card';
-        wrapper.innerHTML = `
-          <div class="mini-preview">${itemImages[item] ? `<img src="${itemImages[item]}" alt="${item}" />` : meta.icon}</div>
-          <div style="text-align:center; font-weight:800; margin-bottom:4px; font-size:13px;">${item}</div>
-          <div style="text-align:center; color:var(--muted); font-size:11px; margin-bottom:10px;">${meta.hint}</div>
-          <input type="file" accept="image/*" data-image-item="${item}" />
-          <button type="button" class="tiny-btn" data-clear-image="${item}">Clear image</button>
-        `;
-        imageLibraryGrid.appendChild(wrapper);
-      });
-    };
-        const card = document.createElement('div');
-        card.className = 'loot-item';
-        card.innerHTML = `
-          <div class="loot-icon">${meta.icon}</div>
-          <strong>${item}</strong>
-          <small>${meta.hint}</small>
-        `;
-        priorityGrid.appendChild(card);
-      });
-    }
-
-    function updatePresetButtons(activeKey) {
-      document.querySelectorAll('.preset').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.preset === activeKey);
       });
     }
 
@@ -1037,56 +635,50 @@
       stashGrid.innerHTML = '';
       stashHighlights.innerHTML = '';
       const stash = profile.stash || {};
+
       stashItems.forEach(item => {
         const meta = itemMeta[item] || { icon: '📦', hint: 'loot' };
         const amount = stash[item] ?? 0;
         const card = document.createElement('div');
         card.className = 'loot-item';
-        card.style.minHeight = '172px';
+        card.style.minHeight = '178px';
         card.innerHTML = `
           <div class="loot-icon">${renderIconContent(item)}</div>
           <strong>${item}</strong>
           <small>${meta.hint}</small>
-          <input data-stash-item="${item}" type="number" min="0" value="${amount}" style="margin-top:6px; text-align:center; font-weight:800;" />
+          <input data-stash-item="${item}" type="number" min="0" value="${amount}" style="margin-top:6px; text-align:center; font-weight:900;" />
         `;
         stashGrid.appendChild(card);
       });
 
-      const topNeed = Object.entries(stash)
-        .sort((a,b) => a[1]-b[1])
-        .slice(0,4)
-        .map(([name,val]) => `${name}: ${val}`);
-      topNeed.forEach(text => {
+      const highlights = stashItems
+        .map(name => [name, stash[name] ?? 0])
+        .sort((a, b) => a[1] - b[1])
+        .slice(0, 4)
+        .map(([name, amount]) => `${name}: ${amount}`);
+
+      highlights.forEach(text => {
         const pill = document.createElement('span');
         pill.className = 'pill';
         pill.textContent = text;
         stashHighlights.appendChild(pill);
       });
-    };
+    }
+
+    function renderImageLibrary() {
+      imageLibraryGrid.innerHTML = '';
       stashItems.forEach(item => {
         const meta = itemMeta[item] || { icon: '📦', hint: 'loot' };
-        const amount = stash[item] ?? 0;
         const card = document.createElement('div');
-        card.className = 'loot-item';
-        card.style.minHeight = '172px';
+        card.className = 'image-card';
         card.innerHTML = `
-          <div class="loot-icon">${meta.icon}</div>
-          <strong>${item}</strong>
-          <small>${meta.hint}</small>
-          <input data-stash-item="${item}" type="number" min="0" value="${amount}" style="margin-top:6px; text-align:center; font-weight:800;" />
+          <div class="mini-preview">${itemImages[item] ? `<img src="${itemImages[item]}" alt="${item}" />` : meta.icon}</div>
+          <div style="text-align:center; font-weight:900; margin-bottom:4px; font-size:13px; color:var(--text);">${item}</div>
+          <div style="text-align:center; color:var(--muted); font-size:11px; margin-bottom:10px;">${meta.hint}</div>
+          <input type="file" accept="image/*" data-image-item="${item}" />
+          <button type="button" class="ghost-btn tiny-btn" data-clear-image="${item}">Clear image</button>
         `;
-        stashGrid.appendChild(card);
-      });
-
-      const topNeed = Object.entries(stash)
-        .sort((a,b) => a[1]-b[1])
-        .slice(0,4)
-        .map(([name,val]) => `${name}: ${val}`);
-      topNeed.forEach(text => {
-        const pill = document.createElement('span');
-        pill.className = 'pill';
-        pill.textContent = text;
-        stashHighlights.appendChild(pill);
+        imageLibraryGrid.appendChild(card);
       });
     }
 
@@ -1100,43 +692,43 @@
       spawnSelect.value = profile.spawn || 'spaceport';
       profileStage.value = profile.stage || 'endgame';
       renderStash(profile);
-      profileMeta.textContent = `Profile: ${name}. Use one profile per player so stash, weapon choices, and workbench focus stay personal.`;
     }
 
     function persistCurrentProfile() {
-      const currentName = profileSelect.value || playerInput.value || 'Player';
-      const current = profiles[currentName] || { stash: {} };
-      current.name = playerInput.value || currentName;
-      current.weaponPreset = weaponPreset.value;
-      current.weaponCustom = weaponCustom.value;
-      current.package = packageSelect.value;
-      current.spawn = spawnSelect.value;
-      current.stage = profileStage.value;
-      current.stash = current.stash || {};
+      const key = profileSelect.value || playerInput.value || 'Player';
+      if (!profiles[key]) {
+        profiles[key] = { name: key, stash: Object.fromEntries(stashItems.map(i => [i, 0])) };
+      }
+      profiles[key].name = playerInput.value || key;
+      profiles[key].weaponPreset = weaponPreset.value;
+      profiles[key].weaponCustom = weaponCustom.value;
+      profiles[key].package = packageSelect.value;
+      profiles[key].spawn = spawnSelect.value;
+      profiles[key].stage = profileStage.value;
+      profiles[key].stash = profiles[key].stash || {};
       document.querySelectorAll('[data-stash-item]').forEach(input => {
-        current.stash[input.dataset.stashItem] = Number(input.value || 0);
+        profiles[key].stash[input.dataset.stashItem] = Number(input.value || 0);
       });
-      profiles[currentName] = current;
-      localStorage.setItem('arcProfiles', JSON.stringify(profiles));
-    }</strong>
-          <small>${cardData.need.join(' • ')}</small>
-        `;
-        workbenchGrid.appendChild(card);
+      saveProfiles();
+    }
+
+    function updatePresetButtons(activeKey) {
+      document.querySelectorAll('.preset').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.preset === activeKey);
       });
     }
 
     function updateView() {
-      const pkgKey = packageSelect.value || 'pvp';
-      const spawnKey = spawnSelect.value || 'spaceport';
-      const pkg = packageData[pkgKey];
-      const spawn = spawnData[spawnKey];
+      const pkg = packageData[packageSelect.value || 'pvp'];
+      const spawn = spawnData[spawnSelect.value || 'spaceport'];
       const player = playerInput.value || 'Player';
       const weapon = weaponCustom.value.trim() || weaponPreset.value || 'Stitcher IV';
       const stage = profileStage.value || 'endgame';
+      const profileName = profileSelect.value || player;
+      const currentProfile = profiles[profileName] || { stash: {} };
       const priority = getPriorityList(pkg, spawn);
-      const currentProfile = profiles[profileSelect.value] || { stash: {} };
 
-      updatePresetButtons(pkgKey);
+      updatePresetButtons(packageSelect.value);
       packageSummary.textContent = pkg.short;
       statusText.textContent = pkg.status;
       spawnName.textContent = spawn.label;
@@ -1148,12 +740,12 @@
       renderWorkbench(stage);
       renderStash(currentProfile);
       weaponGoalText.textContent = weapon;
-      profileMeta.textContent = `Profile: ${profileSelect.value || player}. Stage: ${profileStage.options[profileStage.selectedIndex].text}.`;
+      profileMeta.textContent = `Profile: ${profileName}. Stage: ${profileStage.options[profileStage.selectedIndex].text}. One profile per player keeps stash, workbench focus, and weapon goal personal.`;
 
       summaryBox.textContent = [
         'ARC RAID PLAN',
         `Player: ${player}`,
-        `Profile: ${profileSelect.value || player}`,
+        `Profile: ${profileName}`,
         `Package: ${pkg.label}`,
         `Spawn: ${spawn.label}`,
         `Profile Stage: ${profileStage.options[profileStage.selectedIndex].text}`,
@@ -1163,8 +755,7 @@
         `Weapon Goal: ${weapon}`,
         `Workbench Focus: ${(workbenchProfiles[stage] || []).map(x => x.name).join(', ')}`,
         `Route: ${spawn.steps.join(' → ')}`,
-      ].join('
-');
+      ].join('\n');
 
       persistCurrentProfile();
     }
@@ -1175,7 +766,6 @@
         btn.classList.toggle('active', btn.dataset.view === mode);
       });
       modeBtn.textContent = mode === 'glance' ? 'Full View' : 'Glance Mode';
-      modeBtn.dataset.mode = mode;
     }
 
     copyBtn.addEventListener('click', async () => {
@@ -1188,9 +778,26 @@
       }
     });
 
+    modeBtn.addEventListener('click', () => {
+      setViewMode(document.body.classList.contains('glance') ? 'full' : 'glance');
+    });
+
+    document.addEventListener('click', (event) => {
+      if (event.target.matches('.toggle-btn')) {
+        setViewMode(event.target.dataset.view);
+      }
+      if (event.target.matches('[data-clear-image]')) {
+        delete itemImages[event.target.dataset.clearImage];
+        saveImages();
+        renderImageLibrary();
+        updateView();
+      }
+    });
+
     newProfileBtn.addEventListener('click', () => {
       const name = prompt('New profile name');
       if (!name) return;
+      if (profiles[name]) return alert('That profile already exists.');
       profiles[name] = {
         name,
         weaponPreset: 'Stitcher IV',
@@ -1200,7 +807,7 @@
         stage: 'early',
         stash: Object.fromEntries(stashItems.map(i => [i, 0]))
       };
-      localStorage.setItem('arcProfiles', JSON.stringify(profiles));
+      saveProfiles();
       populateControls();
       profileSelect.value = name;
       loadProfile(name);
@@ -1213,22 +820,11 @@
       if (Object.keys(profiles).length === 1) return alert('Keep at least one profile.');
       if (!confirm(`Delete profile ${name}?`)) return;
       delete profiles[name];
-      localStorage.setItem('arcProfiles', JSON.stringify(profiles));
+      saveProfiles();
       populateControls();
       profileSelect.value = Object.keys(profiles)[0];
       loadProfile(profileSelect.value);
       updateView();
-    });
-
-    modeBtn.addEventListener('click', () => {
-      const next = document.body.classList.contains('glance') ? 'full' : 'glance';
-      setViewMode(next);
-    });
-
-    document.addEventListener('click', (event) => {
-      if (event.target.matches('.toggle-btn')) {
-        setViewMode(event.target.dataset.view);
-      }
     });
 
     [packageSelect, spawnSelect, playerInput, weaponPreset, weaponCustom, profileStage, profileSelect].forEach(el => {
@@ -1239,13 +835,6 @@
       });
     });
 
-    populateControls();
-    renderImageLibrary();
-    profileSelect.value = Object.keys(profiles)[0];
-    loadProfile(profileSelect.value);
-    setViewMode('full');
-    updateView();
-
     document.addEventListener('input', (event) => {
       if (event.target.matches('[data-stash-item]')) {
         persistCurrentProfile();
@@ -1255,13 +844,13 @@
 
     document.addEventListener('change', (event) => {
       if (event.target.matches('[data-image-item]')) {
-        const item = event.target.dataset.imageItem;
         const file = event.target.files && event.target.files[0];
+        const item = event.target.dataset.imageItem;
         if (!file) return;
         const reader = new FileReader();
         reader.onload = () => {
           itemImages[item] = reader.result;
-          localStorage.setItem('arcItemImages', JSON.stringify(itemImages));
+          saveImages();
           renderImageLibrary();
           updateView();
         };
@@ -1269,15 +858,12 @@
       }
     });
 
-    document.addEventListener('click', (event) => {
-      if (event.target.matches('[data-clear-image]')) {
-        const item = event.target.dataset.clearImage;
-        delete itemImages[item];
-        localStorage.setItem('arcItemImages', JSON.stringify(itemImages));
-        renderImageLibrary();
-        updateView();
-      }
-    });
+    populateControls();
+    profileSelect.value = Object.keys(profiles)[0];
+    loadProfile(profileSelect.value);
+    setViewMode('full');
+    renderImageLibrary();
+    updateView();
   </script>
 </body>
 </html>
