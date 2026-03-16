@@ -453,6 +453,15 @@
           </div>
 
           <div>
+            <label for="profileSelect">Profile</label>
+            <div style="display:grid; grid-template-columns: 1fr auto auto; gap:8px;">
+              <select id="profileSelect"></select>
+              <button type="button" class="button secondary" id="newProfileBtn">New</button>
+              <button type="button" class="button secondary" id="deleteProfileBtn">Delete</button>
+            </div>
+          </div>
+
+          <div>
             <label for="player">Player</label>
             <input id="player" type="text" value="Jartukainen" />
           </div>
@@ -460,7 +469,7 @@
           <div>
             <label for="weaponPreset">Weapon Goal</label>
             <select id="weaponPreset"></select>
-            <input id="weaponCustom" type="text" value="" placeholder="Optional custom weapon goal" />
+            <input id="weaponCustom" type="text" value="" placeholder="Optional custom weapon goal" style="margin-top:8px;" />
           </div>
 
           <div>
@@ -476,6 +485,16 @@
           <div>
             <label for="spawn">Spawn</label>
             <select id="spawn"></select>
+          </div>
+
+          <div>
+            <label for="profileStage">Progress Stage</label>
+            <select id="profileStage">
+              <option value="early">Season Start / Workbench Build</option>
+              <option value="mid">Mid Progression</option>
+              <option value="endgame" selected>Endgame / PvP</option>
+              <option value="recovery">Recovery After Losses</option>
+            </select>
           </div>
         </div>
       </div>
@@ -532,19 +551,12 @@
         <div class="section-title" style="font-size:22px;">Profile & Workbenches</div>
         <div class="snapshot-grid" style="grid-template-columns: 1fr 1fr;">
           <div class="mini-card">
-            <h3>Profile</h3>
+            <h3>Player Profile</h3>
             <div style="display:grid; gap:12px;">
+              <div id="profileMeta" style="color:var(--muted); line-height:1.45; font-size:14px;"></div>
               <div>
-                <label for="profileStage">Progress Stage</label>
-                <select id="profileStage">
-                  <option value="early">Season Start / Workbench Build</option>
-                  <option value="mid">Mid Progression</option>
-                  <option value="endgame" selected>Endgame / PvP</option>
-                  <option value="recovery">Recovery After Losses</option>
-                </select>
-              </div>
-              <div style="color:var(--muted); line-height:1.45; font-size:14px;">
-                Profiles make sense here. One profile per player is the best model, because each player has a different stash, weapon goal, and workbench progress.
+                <label style="margin-bottom:10px;">Stash Highlights</label>
+                <div id="stashHighlights" class="pill-row"></div>
               </div>
             </div>
           </div>
@@ -553,6 +565,13 @@
             <div id="workbenchGrid" class="priority-grid" style="grid-template-columns: repeat(2, minmax(0,1fr));"></div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px;">
+      <div class="card-inner">
+        <div class="section-title" style="font-size:22px;">Stash Tracker</div>
+        <div id="stashGrid" class="priority-grid" style="grid-template-columns: repeat(4, minmax(0,1fr));"></div>
       </div>
     </div>
 
@@ -680,6 +699,30 @@
       'Aphelion Rifle'
     ];
 
+    const stashItems = [
+      'Battery','Magnets','Wires','Crude Oil','Canister','Bandage','Shield Charger','Stim',
+      'Medium Gun Parts','Heavy Gun Parts','Light Gun Parts','Plastic Parts','Fabric','Metal Parts',
+      'Rubber Parts','ARC Alloy','Chemicals','ARC Powercell'
+    ];
+
+    const defaultProfiles = {
+      Jartukainen: {
+        name: 'Jartukainen',
+        weaponPreset: 'Stitcher IV',
+        weaponCustom: '',
+        package: 'pvp',
+        spawn: 'spaceport',
+        stage: 'endgame',
+        stash: {
+          Battery: 8, Magnets: 5, Wires: 9, 'Crude Oil': 2, Canister: 4,
+          Bandage: 6, 'Shield Charger': 4, Stim: 5,
+          'Medium Gun Parts': 5, 'Heavy Gun Parts': 2, 'Light Gun Parts': 3,
+          'Plastic Parts': 6, Fabric: 5, 'Metal Parts': 4, 'Rubber Parts': 2,
+          'ARC Alloy': 3, Chemicals: 2, 'ARC Powercell': 1
+        }
+      }
+    };
+
     const workbenchProfiles = {
       early: [
         { name: 'Gunsmith', need: ['Metal Parts', 'Rubber Parts'] },
@@ -714,6 +757,9 @@
     const weaponPreset = document.getElementById('weaponPreset');
     const weaponCustom = document.getElementById('weaponCustom');
     const profileStage = document.getElementById('profileStage');
+    const profileSelect = document.getElementById('profileSelect');
+    const newProfileBtn = document.getElementById('newProfileBtn');
+    const deleteProfileBtn = document.getElementById('deleteProfileBtn');
     const packageSummary = document.getElementById('packageSummary');
     const statusText = document.getElementById('statusText');
     const spawnName = document.getElementById('spawnName');
@@ -724,17 +770,64 @@
     const consumablesRow = document.getElementById('consumablesRow');
     const weaponGoalText = document.getElementById('weaponGoalText');
     const workbenchGrid = document.getElementById('workbenchGrid');
+    const stashGrid = document.getElementById('stashGrid');
+    const stashHighlights = document.getElementById('stashHighlights');
+    const profileMeta = document.getElementById('profileMeta');
     const summaryBox = document.getElementById('summaryBox');
     const copyBtn = document.getElementById('copyBtn');
     const modeBtn = document.getElementById('modeBtn');
 
+    let profiles = JSON.parse(localStorage.getItem('arcProfiles') || 'null') || structuredClone(defaultProfiles);
+
     function populateControls() {
+      packageSelect.innerHTML = '';
+      spawnSelect.innerHTML = '';
+      weaponPreset.innerHTML = '';
+      presetGrid.innerHTML = '';
+      profileSelect.innerHTML = '';
+
       Object.entries(packageData).forEach(([key, pkg]) => {
         const opt = document.createElement('option');
         opt.value = key;
         opt.textContent = pkg.label;
         packageSelect.appendChild(opt);
       });
+
+      Object.entries(spawnData).forEach(([key, spawn]) => {
+        const opt = document.createElement('option');
+        opt.value = key;
+        opt.textContent = spawn.label;
+        spawnSelect.appendChild(opt);
+      });
+
+      weaponOptions.forEach(weapon => {
+        const opt = document.createElement('option');
+        opt.value = weapon;
+        opt.textContent = weapon;
+        weaponPreset.appendChild(opt);
+      });
+
+      Object.entries(packageData).forEach(([key, pkg]) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'preset';
+        btn.dataset.preset = key;
+        btn.innerHTML = `<strong>${pkg.label}</strong><span>${pkg.short}</span>`;
+        btn.addEventListener('click', () => {
+          packageSelect.value = key;
+          persistCurrentProfile();
+          updateView();
+        });
+        presetGrid.appendChild(btn);
+      });
+
+      Object.keys(profiles).forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        profileSelect.appendChild(opt);
+      });
+    });
 
       Object.entries(spawnData).forEach(([key, spawn]) => {
         const opt = document.createElement('option');
@@ -826,6 +919,72 @@
       });
     }
 
+    function renderStash(profile) {
+      stashGrid.innerHTML = '';
+      stashHighlights.innerHTML = '';
+      const stash = profile.stash || {};
+      stashItems.forEach(item => {
+        const meta = itemMeta[item] || { icon: '📦', hint: 'loot' };
+        const amount = stash[item] ?? 0;
+        const card = document.createElement('div');
+        card.className = 'loot-item';
+        card.style.minHeight = '172px';
+        card.innerHTML = `
+          <div class="loot-icon">${meta.icon}</div>
+          <strong>${item}</strong>
+          <small>${meta.hint}</small>
+          <input data-stash-item="${item}" type="number" min="0" value="${amount}" style="margin-top:6px; text-align:center; font-weight:800;" />
+        `;
+        stashGrid.appendChild(card);
+      });
+
+      const topNeed = Object.entries(stash)
+        .sort((a,b) => a[1]-b[1])
+        .slice(0,4)
+        .map(([name,val]) => `${name}: ${val}`);
+      topNeed.forEach(text => {
+        const pill = document.createElement('span');
+        pill.className = 'pill';
+        pill.textContent = text;
+        stashHighlights.appendChild(pill);
+      });
+    }
+
+    function loadProfile(name) {
+      const profile = profiles[name];
+      if (!profile) return;
+      playerInput.value = profile.name || name;
+      weaponPreset.value = profile.weaponPreset || 'Stitcher IV';
+      weaponCustom.value = profile.weaponCustom || '';
+      packageSelect.value = profile.package || 'pvp';
+      spawnSelect.value = profile.spawn || 'spaceport';
+      profileStage.value = profile.stage || 'endgame';
+      renderStash(profile);
+      profileMeta.textContent = `Profile: ${name}. Use one profile per player so stash, weapon choices, and workbench focus stay personal.`;
+    }
+
+    function persistCurrentProfile() {
+      const currentName = profileSelect.value || playerInput.value || 'Player';
+      const current = profiles[currentName] || { stash: {} };
+      current.name = playerInput.value || currentName;
+      current.weaponPreset = weaponPreset.value;
+      current.weaponCustom = weaponCustom.value;
+      current.package = packageSelect.value;
+      current.spawn = spawnSelect.value;
+      current.stage = profileStage.value;
+      current.stash = current.stash || {};
+      document.querySelectorAll('[data-stash-item]').forEach(input => {
+        current.stash[input.dataset.stashItem] = Number(input.value || 0);
+      });
+      profiles[currentName] = current;
+      localStorage.setItem('arcProfiles', JSON.stringify(profiles));
+    }</strong>
+          <small>${cardData.need.join(' • ')}</small>
+        `;
+        workbenchGrid.appendChild(card);
+      });
+    }
+
     function updateView() {
       const pkgKey = packageSelect.value || 'pvp';
       const spawnKey = spawnSelect.value || 'spaceport';
@@ -835,6 +994,7 @@
       const weapon = weaponCustom.value.trim() || weaponPreset.value || 'Stitcher IV';
       const stage = profileStage.value || 'endgame';
       const priority = getPriorityList(pkg, spawn);
+      const currentProfile = profiles[profileSelect.value] || { stash: {} };
 
       updatePresetButtons(pkgKey);
       packageSummary.textContent = pkg.short;
@@ -846,11 +1006,14 @@
       renderPills(safePocketRow, pkg.safePocket);
       renderPills(consumablesRow, pkg.consumables);
       renderWorkbench(stage);
+      renderStash(currentProfile);
       weaponGoalText.textContent = weapon;
+      profileMeta.textContent = `Profile: ${profileSelect.value || player}. Stage: ${profileStage.options[profileStage.selectedIndex].text}.`;
 
       summaryBox.textContent = [
         'ARC RAID PLAN',
         `Player: ${player}`,
+        `Profile: ${profileSelect.value || player}`,
         `Package: ${pkg.label}`,
         `Spawn: ${spawn.label}`,
         `Profile Stage: ${profileStage.options[profileStage.selectedIndex].text}`,
@@ -860,8 +1023,9 @@
         `Weapon Goal: ${weapon}`,
         `Workbench Focus: ${(workbenchProfiles[stage] || []).map(x => x.name).join(', ')}`,
         `Route: ${spawn.steps.join(' → ')}`,
-      ].join('
-');
+      ].join('\n');
+
+      persistCurrentProfile();
     }
 
     function setViewMode(mode) {
@@ -883,6 +1047,38 @@
       }
     });
 
+    newProfileBtn.addEventListener('click', () => {
+      const name = prompt('New profile name');
+      if (!name) return;
+      profiles[name] = {
+        name,
+        weaponPreset: 'Stitcher IV',
+        weaponCustom: '',
+        package: 'loot',
+        spawn: 'dam',
+        stage: 'early',
+        stash: Object.fromEntries(stashItems.map(i => [i, 0]))
+      };
+      localStorage.setItem('arcProfiles', JSON.stringify(profiles));
+      populateControls();
+      profileSelect.value = name;
+      loadProfile(name);
+      updateView();
+    });
+
+    deleteProfileBtn.addEventListener('click', () => {
+      const name = profileSelect.value;
+      if (!name) return;
+      if (Object.keys(profiles).length === 1) return alert('Keep at least one profile.');
+      if (!confirm(`Delete profile ${name}?`)) return;
+      delete profiles[name];
+      localStorage.setItem('arcProfiles', JSON.stringify(profiles));
+      populateControls();
+      profileSelect.value = Object.keys(profiles)[0];
+      loadProfile(profileSelect.value);
+      updateView();
+    });
+
     modeBtn.addEventListener('click', () => {
       const next = document.body.classList.contains('glance') ? 'full' : 'glance';
       setViewMode(next);
@@ -894,17 +1090,26 @@
       }
     });
 
-    [packageSelect, spawnSelect, playerInput, weaponPreset, weaponCustom, profileStage].forEach(el => {
+    [packageSelect, spawnSelect, playerInput, weaponPreset, weaponCustom, profileStage, profileSelect].forEach(el => {
       el.addEventListener('input', updateView);
-      el.addEventListener('change', updateView);
+      el.addEventListener('change', () => {
+        if (el === profileSelect) loadProfile(profileSelect.value);
+        updateView();
+      });
     });
 
     populateControls();
-    packageSelect.value = 'pvp';
-    spawnSelect.value = 'spaceport';
-    weaponPreset.value = 'Stitcher IV';
+    profileSelect.value = Object.keys(profiles)[0];
+    loadProfile(profileSelect.value);
     setViewMode('full');
     updateView();
+
+    document.addEventListener('input', (event) => {
+      if (event.target.matches('[data-stash-item]')) {
+        persistCurrentProfile();
+        updateView();
+      }
+    });
   </script>
 </body>
 </html>
