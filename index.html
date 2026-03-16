@@ -300,14 +300,13 @@
     newProfileBtn.addEventListener('click', ()=>{const name=prompt('New profile name'); if(!name) return; if(profiles[name]) return alert('That profile already exists.'); profiles[name]={name,weaponPreset:'Stitcher IV',weaponCustom:'',package:'loot',spawn:'dam',stage:'early',stash:Object.fromEntries(stashItems.map(i=>[i,0]))}; saveProfiles(); populateControls(); profileSelect.value=name; loadProfile(name); updateView();});
     deleteProfileBtn.addEventListener('click', ()=>{const name=profileSelect.value; if(!name) return; if(Object.keys(profiles).length===1) return alert('Keep at least one profile.'); if(!confirm(`Delete profile ${name}?`)) return; delete profiles[name]; saveProfiles(); populateControls(); profileSelect.value=Object.keys(profiles)[0]; loadProfile(profileSelect.value); updateView();});
     [packageSelect,spawnSelect,playerInput,weaponPreset,weaponCustom,profileStage,profileSelect,upgradeWorkbench,upgradeCurrent,upgradeTarget].forEach(el=>{el.addEventListener('input', updateView); el.addEventListener('change', ()=>{if(el===profileSelect) loadProfile(profileSelect.value); updateView();});});
-    document.addEventListener('input', event=>{if(event.target.matches('[data-stash-item]')){persistCurrentProfile(); updateView();}});
-    document.addEventListener('change', event=>{if(event.target.matches('[data-image-item]')){const file=event.target.files&&event.target.files[0]; const item=event.target.dataset.imageItem; if(!file) return; const reader=new FileReader(); reader.onload=()=>{itemImages[item]=reader.result; saveImages(); renderImageLibrary(); updateView();}; reader.readAsDataURL(file);}});
+    document.addEventListener('change', event=>{
+  if(event.target.matches('[data-image-item]')){
+    const profile = profiles[profileSelect.value];
     populateControls();
-    profileSelect.value=Object.keys(profiles)[0];
-    loadProfile(profileSelect.value);
-    renderImageLibrary();
-    setViewMode('full');
-    updateView();
-  </script>
-</body>
-</html>
+  }
+});
+
+profileSelect.value = Object.keys(profiles)[0];
+loadProfile(profileSelect.value);
+updateView();
