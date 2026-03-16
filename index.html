@@ -398,7 +398,7 @@
     <div class="card images-card" style="margin-top:18px;">
       <div class="card-inner">
         <div class="section-title" style="font-size:22px;">Item Image Library</div>
-        <div class="footer-note" style="margin-top:0; margin-bottom:14px;">Upload your own item screenshots or cropped images. They are saved locally in your browser and replace emoji icons in the planner.</div>
+        <div class="footer-note" style="margin-top:0; margin-bottom:14px;">The planner now uses MetaForge CDN item icons by default. You can still override any item with your own uploaded image, saved locally in your browser.</div>
         <div id="imageLibraryGrid" class="image-library-grid"></div>
       </div>
     </div>
@@ -489,32 +489,34 @@
       }
     };
 
+    const iconBase = 'https://cdn.metaforge.app/arc-raiders/icons/';
+
     const itemMeta = {
-      'Battery': { icon: '🔋', hint: 'workshop + craft' },
-      'Magnets': { icon: '🧲', hint: 'electronics' },
-      'Wires': { icon: '🧵', hint: 'utility + craft' },
-      'Crude Oil': { icon: '🛢️', hint: 'fuel + craft' },
-      'Canister': { icon: '🧴', hint: 'sustain / fuel' },
-      'Bandage': { icon: '🩹', hint: 'healing' },
-      'Shield Charger': { icon: '🛡️', hint: 'shield sustain' },
-      'Stim': { icon: '💉', hint: 'stamina / movement' },
-      'Medium Gun Parts': { icon: '🔧', hint: 'weapon upgrade' },
-      'Heavy Gun Parts': { icon: '⚙️', hint: 'high tier weapon' },
-      'Light Gun Parts': { icon: '🎯', hint: 'backup weapon' },
-      'Plastic Parts': { icon: '🧰', hint: 'gear bench' },
-      'Fabric': { icon: '🧻', hint: 'medical / bench' },
-      'Metal Parts': { icon: '🔩', hint: 'gunsmith / refiner' },
-      'Rubber Parts': { icon: '🛞', hint: 'gunsmith' },
-      'ARC Alloy': { icon: '🪙', hint: 'utility / med / explosives' },
-      'Chemicals': { icon: '🧪', hint: 'explosives / med' },
-      'ARC Powercell': { icon: '🔌', hint: 'refiner / shields' },
-      'Aphelion Rifle': { icon: '⚡', hint: 'legendary rifle' },
-      'Arpeggio IV': { icon: '🎼', hint: 'burst rifle' },
-      'Anvil IV': { icon: '🔨', hint: 'heavy pistol' },
-      'Il Toro IV': { icon: '🐂', hint: 'power rifle' },
-      'Stitcher IV': { icon: '✂️', hint: 'trusted all-rounder' },
-      'Equalizer IV': { icon: '🎚️', hint: 'smg option' },
-      'Mistral IV': { icon: '🌪️', hint: 'mobile weapon' }
+      'Battery': { img: 'battery.png', hint: 'workshop + craft' },
+      'Magnets': { img: 'magnets.png', hint: 'electronics' },
+      'Wires': { img: 'wires.png', hint: 'utility + craft' },
+      'Crude Oil': { img: 'crude-oil.png', hint: 'fuel + craft' },
+      'Canister': { img: 'canister.png', hint: 'sustain / fuel' },
+      'Bandage': { img: 'bandage.png', hint: 'healing' },
+      'Shield Charger': { img: 'shield-charger.png', hint: 'shield sustain' },
+      'Stim': { img: 'stim.png', hint: 'stamina / movement' },
+      'Medium Gun Parts': { img: 'medium-gun-parts.png', hint: 'weapon upgrade' },
+      'Heavy Gun Parts': { img: 'heavy-gun-parts.png', hint: 'high tier weapon' },
+      'Light Gun Parts': { img: 'light-gun-parts.png', hint: 'backup weapon' },
+      'Plastic Parts': { img: 'plastic-parts.png', hint: 'gear bench' },
+      'Fabric': { img: 'fabric.png', hint: 'medical / bench' },
+      'Metal Parts': { img: 'metal-parts.png', hint: 'gunsmith / refiner' },
+      'Rubber Parts': { img: 'rubber-parts.png', hint: 'gunsmith' },
+      'ARC Alloy': { img: 'arc-alloy.png', hint: 'utility / med / explosives' },
+      'Chemicals': { img: 'chemicals.png', hint: 'explosives / med' },
+      'ARC Powercell': { img: 'arc-powercell.png', hint: 'refiner / shields' },
+      'Aphelion Rifle': { img: 'aphelion-rifle.png', hint: 'legendary rifle' },
+      'Arpeggio IV': { img: 'arpeggio-4.png', hint: 'burst rifle' },
+      'Anvil IV': { img: 'anvil-4.png', hint: 'heavy pistol' },
+      'Il Toro IV': { img: 'il-toro-4.png', hint: 'power rifle' },
+      'Stitcher IV': { img: 'stitcher-4.png', hint: 'trusted all-rounder' },
+      'Equalizer IV': { img: 'equalizer-4.png', hint: 'smg option' },
+      'Mistral IV': { img: 'mistral-4.png', hint: 'mobile weapon' }
     };
 
     const weaponOptions = [
@@ -653,8 +655,29 @@
       });
     }
 
+    function toKebab(value) {
+      return String(value)
+        .toLowerCase()
+        .replace(/iv/g, '4')
+        .replace(/iii/g, '3')
+        .replace(/ii/g, '2')
+        .replace(/i/g, '1')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    }
+
+    function getMetaImage(item) {
+      const meta = itemMeta[item] || {};
+      if (meta.img) return iconBase + meta.img;
+      return iconBase + toKebab(item) + '.png';
+    }
+
     function renderIconContent(item) {
       const meta = itemMeta[item] || { icon: '📦' };
+      const fallback = meta.icon || '📦';
+      const src = itemImages[item] || getMetaImage(item);
+      return `<img src="${src}" alt="${item}" loading="lazy" onerror="this.onerror=null;this.replaceWith(document.createTextNode('${fallback}'))" />`;
+    };
       return itemImages[item] ? `<img src="${itemImages[item]}" alt="${item}" />` : meta.icon;
     }
 
@@ -760,14 +783,15 @@
       imageLibraryGrid.innerHTML = '';
       stashItems.forEach(item => {
         const meta = itemMeta[item] || { icon: '📦', hint: 'loot' };
+        const previewSrc = itemImages[item] || getMetaImage(item);
         const card = document.createElement('div');
         card.className = 'image-card';
         card.innerHTML = `
-          <div class="mini-preview">${itemImages[item] ? `<img src="${itemImages[item]}" alt="${item}" />` : meta.icon}</div>
+          <div class="mini-preview"><img src="${previewSrc}" alt="${item}" loading="lazy" onerror="this.onerror=null;this.replaceWith(document.createTextNode('${meta.icon || '📦'}'))" /></div>
           <div style="text-align:center; font-weight:900; margin-bottom:4px; font-size:13px; color:var(--text);">${item}</div>
           <div style="text-align:center; color:var(--muted); font-size:11px; margin-bottom:10px;">${meta.hint}</div>
           <input type="file" accept="image/*" data-image-item="${item}" />
-          <button type="button" class="ghost-btn tiny-btn" data-clear-image="${item}">Clear image</button>
+          <button type="button" class="ghost-btn tiny-btn" data-clear-image="${item}">Use default CDN image</button>
         `;
         imageLibraryGrid.appendChild(card);
       });
