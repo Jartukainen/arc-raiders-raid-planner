@@ -335,6 +335,67 @@
       background: linear-gradient(135deg, var(--arc-blue), var(--arc-green));
       border: 1px solid rgba(255,255,255,.2);
       box-shadow: 0 6px 14px rgba(0,0,0,.35);
+      overflow: hidden;
+    }
+
+    .loot-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .image-library-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .image-card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(255,255,255,.06);
+    }
+
+    .image-card .mini-preview {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 10px;
+      border-radius: 18px;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--arc-blue), var(--arc-green));
+      border: 1px solid rgba(255,255,255,.18);
+    }
+
+    .image-card .mini-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .image-card input[type="file"] {
+      width: 100%;
+      font-size: 12px;
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.9);
+      color: #111;
+    }
+
+    .tiny-btn {
+      margin-top: 8px;
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(255,255,255,.12);
+      color: var(--text);
+      border: 1px solid var(--line);
+      box-shadow: none;
+      font-weight: 700;
     }
 
     .loot-item strong {
@@ -419,6 +480,14 @@
 
     @media (max-width: 640px) {
       .app { padding: 14px; }
+      .preset-grid { grid-template-columns: 1fr; }
+      .priority-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .image-library-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .hero { align-items: start; }
+      h1 { font-size: 34px; }
+      .section-title { font-size: 22px; }
+      .loot-item { min-height: 124px; }
+    }
       .preset-grid { grid-template-columns: 1fr; }
       .priority-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .hero { align-items: start; }
@@ -575,6 +644,14 @@
       </div>
     </div>
 
+    <div class="card" style="margin-top:18px;">
+      <div class="card-inner">
+        <div class="section-title" style="font-size:22px;">Item Image Library</div>
+        <div class="footer-note" style="margin-top:0; margin-bottom:14px;">Use your own item screenshots or cropped images here. They are saved locally in your browser and will replace the emoji icons in the planner.</div>
+        <div id="imageLibraryGrid" class="image-library-grid"></div>
+      </div>
+    </div>
+
     <div class="card summary-card" style="margin-top:18px;">
       <div class="card-inner">
         <div class="section-title" style="font-size:22px;">Raid Summary</div>
@@ -723,6 +800,8 @@
       }
     };
 
+    const defaultItemImages = JSON.parse(localStorage.getItem('arcItemImages') || '{}');
+
     const workbenchProfiles = {
       early: [
         { name: 'Gunsmith', need: ['Metal Parts', 'Rubber Parts'] },
@@ -774,10 +853,12 @@
     const stashHighlights = document.getElementById('stashHighlights');
     const profileMeta = document.getElementById('profileMeta');
     const summaryBox = document.getElementById('summaryBox');
+    const imageLibraryGrid = document.getElementById('imageLibraryGrid');
     const copyBtn = document.getElementById('copyBtn');
     const modeBtn = document.getElementById('modeBtn');
 
     let profiles = JSON.parse(localStorage.getItem('arcProfiles') || 'null') || structuredClone(defaultProfiles);
+    let itemImages = defaultItemImages;
 
     function populateControls() {
       packageSelect.innerHTML = '';
@@ -882,10 +963,43 @@
       });
     }
 
+    function renderIconContent(item) {
+      const meta = itemMeta[item] || { icon: '📦', hint: 'loot' };
+      const img = itemImages[item];
+      return img ? `<img src="${img}" alt="${item}" />` : meta.icon;
+    }
+
     function renderPriority(items) {
       priorityGrid.innerHTML = '';
       items.forEach(item => {
         const meta = itemMeta[item] || { icon: '📦', hint: 'loot' };
+        const card = document.createElement('div');
+        card.className = 'loot-item';
+        card.innerHTML = `
+          <div class="loot-icon">${renderIconContent(item)}</div>
+          <strong>${item}</strong>
+          <small>${meta.hint}</small>
+        `;
+        priorityGrid.appendChild(card);
+      });
+    }
+
+    function renderImageLibrary() {
+      imageLibraryGrid.innerHTML = '';
+      stashItems.forEach(item => {
+        const meta = itemMeta[item] || { icon: '📦', hint: 'loot' };
+        const wrapper = document.createElement('div');
+        wrapper.className = 'image-card';
+        wrapper.innerHTML = `
+          <div class="mini-preview">${itemImages[item] ? `<img src="${itemImages[item]}" alt="${item}" />` : meta.icon}</div>
+          <div style="text-align:center; font-weight:800; margin-bottom:4px; font-size:13px;">${item}</div>
+          <div style="text-align:center; color:var(--muted); font-size:11px; margin-bottom:10px;">${meta.hint}</div>
+          <input type="file" accept="image/*" data-image-item="${item}" />
+          <button type="button" class="tiny-btn" data-clear-image="${item}">Clear image</button>
+        `;
+        imageLibraryGrid.appendChild(wrapper);
+      });
+    };
         const card = document.createElement('div');
         card.className = 'loot-item';
         card.innerHTML = `
@@ -923,6 +1037,32 @@
       stashGrid.innerHTML = '';
       stashHighlights.innerHTML = '';
       const stash = profile.stash || {};
+      stashItems.forEach(item => {
+        const meta = itemMeta[item] || { icon: '📦', hint: 'loot' };
+        const amount = stash[item] ?? 0;
+        const card = document.createElement('div');
+        card.className = 'loot-item';
+        card.style.minHeight = '172px';
+        card.innerHTML = `
+          <div class="loot-icon">${renderIconContent(item)}</div>
+          <strong>${item}</strong>
+          <small>${meta.hint}</small>
+          <input data-stash-item="${item}" type="number" min="0" value="${amount}" style="margin-top:6px; text-align:center; font-weight:800;" />
+        `;
+        stashGrid.appendChild(card);
+      });
+
+      const topNeed = Object.entries(stash)
+        .sort((a,b) => a[1]-b[1])
+        .slice(0,4)
+        .map(([name,val]) => `${name}: ${val}`);
+      topNeed.forEach(text => {
+        const pill = document.createElement('span');
+        pill.className = 'pill';
+        pill.textContent = text;
+        stashHighlights.appendChild(pill);
+      });
+    };
       stashItems.forEach(item => {
         const meta = itemMeta[item] || { icon: '📦', hint: 'loot' };
         const amount = stash[item] ?? 0;
@@ -1023,7 +1163,8 @@
         `Weapon Goal: ${weapon}`,
         `Workbench Focus: ${(workbenchProfiles[stage] || []).map(x => x.name).join(', ')}`,
         `Route: ${spawn.steps.join(' → ')}`,
-      ].join('\n');
+      ].join('
+');
 
       persistCurrentProfile();
     }
@@ -1099,6 +1240,7 @@
     });
 
     populateControls();
+    renderImageLibrary();
     profileSelect.value = Object.keys(profiles)[0];
     loadProfile(profileSelect.value);
     setViewMode('full');
@@ -1107,6 +1249,32 @@
     document.addEventListener('input', (event) => {
       if (event.target.matches('[data-stash-item]')) {
         persistCurrentProfile();
+        updateView();
+      }
+    });
+
+    document.addEventListener('change', (event) => {
+      if (event.target.matches('[data-image-item]')) {
+        const item = event.target.dataset.imageItem;
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          itemImages[item] = reader.result;
+          localStorage.setItem('arcItemImages', JSON.stringify(itemImages));
+          renderImageLibrary();
+          updateView();
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    document.addEventListener('click', (event) => {
+      if (event.target.matches('[data-clear-image]')) {
+        const item = event.target.dataset.clearImage;
+        delete itemImages[item];
+        localStorage.setItem('arcItemImages', JSON.stringify(itemImages));
+        renderImageLibrary();
         updateView();
       }
     });
