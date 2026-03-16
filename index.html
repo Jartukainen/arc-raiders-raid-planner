@@ -424,8 +424,9 @@
           </div>
 
           <div>
-            <label for="weapon">Weapon Goal</label>
-            <input id="weapon" type="text" value="Stitcher IV" />
+            <label for="weaponPreset">Weapon Goal</label>
+            <select id="weaponPreset"></select>
+            <input id="weaponCustom" type="text" value="" placeholder="Optional custom weapon goal" />
           </div>
 
           <div>
@@ -487,6 +488,35 @@
               <h3>Weapon Goal</h3>
               <div id="weaponGoalText" style="font-size:24px; font-weight:800; letter-spacing:-0.02em;"></div>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px;">
+      <div class="card-inner">
+        <div class="section-title" style="font-size:22px;">Profile & Workbenches</div>
+        <div class="snapshot-grid" style="grid-template-columns: 1fr 1fr;">
+          <div class="mini-card">
+            <h3>Profile</h3>
+            <div style="display:grid; gap:12px;">
+              <div>
+                <label for="profileStage">Progress Stage</label>
+                <select id="profileStage">
+                  <option value="early">Season Start / Workbench Build</option>
+                  <option value="mid">Mid Progression</option>
+                  <option value="endgame" selected>Endgame / PvP</option>
+                  <option value="recovery">Recovery After Losses</option>
+                </select>
+              </div>
+              <div style="color:var(--muted); line-height:1.45; font-size:14px;">
+                Profiles make sense here. One profile per player is the best model, because each player has a different stash, weapon goal, and workbench progress.
+              </div>
+            </div>
+          </div>
+          <div class="mini-card">
+            <h3>Workbench Focus</h3>
+            <div id="workbenchGrid" class="priority-grid" style="grid-template-columns: repeat(2, minmax(0,1fr));"></div>
           </div>
         </div>
       </div>
@@ -590,13 +620,66 @@
       "Medium Gun Parts": { icon: "🔧", hint: "weapon upgrade" },
       "Heavy Gun Parts": { icon: "⚙️", hint: "high tier weapon" },
       "Light Gun Parts": { icon: "🎯", hint: "backup weapon" },
+      "Plastic Parts": { icon: "🧰", hint: "gear bench" },
+      "Fabric": { icon: "🧻", hint: "medical / bench" },
+      "Metal Parts": { icon: "🔩", hint: "gunsmith / refiner" },
+      "Rubber Parts": { icon: "🛞", hint: "gunsmith" },
+      "ARC Alloy": { icon: "🪙", hint: "utility / med / explosives" },
+      "Chemicals": { icon: "🧪", hint: "explosives / med" },
+      "ARC Powercell": { icon: "🔌", hint: "refiner / shields" },
+      "Aphelion Rifle": { icon: "⚡", hint: "legendary rifle" },
+      "Arpeggio IV": { icon: "🎼", hint: "burst rifle" },
+      "Anvil IV": { icon: "🔨", hint: "heavy pistol" },
+      "Il Toro IV": { icon: "🐂", hint: "power rifle" },
+      "Stitcher IV": { icon: "✂️", hint: "trusted all-rounder" },
+      "Equalizer IV": { icon: "🎚️", hint: "smg option" },
+      "Mistral IV": { icon: "🌪️", hint: "mobile weapon" },
+    };
+
+    const weaponOptions = [
+      'Stitcher IV',
+      'Il Toro IV',
+      'Equalizer IV',
+      'Arpeggio IV',
+      'Anvil IV',
+      'Mistral IV',
+      'Aphelion Rifle'
+    ];
+
+    const workbenchProfiles = {
+      early: [
+        { name: 'Gunsmith', need: ['Metal Parts', 'Rubber Parts'] },
+        { name: 'Gear Bench', need: ['Plastic Parts', 'Fabric'] },
+        { name: 'Medical Lab', need: ['Fabric', 'ARC Alloy'] },
+        { name: 'Utility Station', need: ['Plastic Parts', 'ARC Alloy'] },
+      ],
+      mid: [
+        { name: 'Refiner', need: ['Metal Parts', 'ARC Powercell'] },
+        { name: 'Explosives Station', need: ['Chemicals', 'ARC Alloy'] },
+        { name: 'Medical Lab', need: ['Fabric', 'ARC Alloy'] },
+        { name: 'Gunsmith', need: ['Metal Parts', 'Rubber Parts'] },
+      ],
+      endgame: [
+        { name: 'PvP Craft Loop', need: ['Shield Charger', 'Bandage', 'Stim', 'Medium Gun Parts'] },
+        { name: 'Weapon Upgrades', need: ['Battery', 'Magnets', 'Wires', 'Heavy Gun Parts'] },
+        { name: 'Support Refill', need: ['Bandage', 'Stim', 'Shield Charger'] },
+        { name: 'ARC Materials', need: ['ARC Alloy', 'ARC Powercell'] },
+      ],
+      recovery: [
+        { name: 'Cheap Rebuild', need: ['Battery', 'Magnets', 'Wires'] },
+        { name: 'Safe Pocket Value', need: ['Battery', 'Stim'] },
+        { name: 'Medical Refill', need: ['Bandage', 'Stim'] },
+        { name: 'Weapon Restart', need: ['Light Gun Parts', 'Medium Gun Parts'] },
+      ]
     };
 
     const packageSelect = document.getElementById('package');
     const spawnSelect = document.getElementById('spawn');
     const presetGrid = document.getElementById('presetGrid');
     const playerInput = document.getElementById('player');
-    const weaponInput = document.getElementById('weapon');
+    const weaponPreset = document.getElementById('weaponPreset');
+    const weaponCustom = document.getElementById('weaponCustom');
+    const profileStage = document.getElementById('profileStage');
     const packageSummary = document.getElementById('packageSummary');
     const statusText = document.getElementById('statusText');
     const spawnName = document.getElementById('spawnName');
@@ -606,6 +689,7 @@
     const safePocketRow = document.getElementById('safePocketRow');
     const consumablesRow = document.getElementById('consumablesRow');
     const weaponGoalText = document.getElementById('weaponGoalText');
+    const workbenchGrid = document.getElementById('workbenchGrid');
     const summaryBox = document.getElementById('summaryBox');
     const copyBtn = document.getElementById('copyBtn');
     const modeBtn = document.getElementById('modeBtn');
@@ -623,6 +707,13 @@
         opt.value = key;
         opt.textContent = spawn.label;
         spawnSelect.appendChild(opt);
+      });
+
+      weaponOptions.forEach(weapon => {
+        const opt = document.createElement('option');
+        opt.value = weapon;
+        opt.textContent = weapon;
+        weaponPreset.appendChild(opt);
       });
 
       Object.entries(packageData).forEach(([key, pkg]) => {
@@ -685,13 +776,30 @@
       });
     }
 
+    function renderWorkbench(stageKey) {
+      const cards = workbenchProfiles[stageKey] || [];
+      workbenchGrid.innerHTML = '';
+      cards.forEach(cardData => {
+        const card = document.createElement('div');
+        card.className = 'loot-item';
+        card.style.minHeight = '160px';
+        card.innerHTML = `
+          <div class="loot-icon">🏗️</div>
+          <strong>${cardData.name}</strong>
+          <small>${cardData.need.join(' • ')}</small>
+        `;
+        workbenchGrid.appendChild(card);
+      });
+    }
+
     function updateView() {
       const pkgKey = packageSelect.value || 'pvp';
       const spawnKey = spawnSelect.value || 'spaceport';
       const pkg = packageData[pkgKey];
       const spawn = spawnData[spawnKey];
       const player = playerInput.value || 'Player';
-      const weapon = weaponInput.value || 'Stitcher IV';
+      const weapon = weaponCustom.value.trim() || weaponPreset.value || 'Stitcher IV';
+      const stage = profileStage.value || 'endgame';
       const priority = getPriorityList(pkg, spawn);
 
       updatePresetButtons(pkgKey);
@@ -703,6 +811,7 @@
       renderPriority(priority);
       renderPills(safePocketRow, pkg.safePocket);
       renderPills(consumablesRow, pkg.consumables);
+      renderWorkbench(stage);
       weaponGoalText.textContent = weapon;
 
       summaryBox.textContent = [
@@ -710,10 +819,12 @@
         `Player: ${player}`,
         `Package: ${pkg.label}`,
         `Spawn: ${spawn.label}`,
+        `Profile Stage: ${profileStage.options[profileStage.selectedIndex].text}`,
         `Priority Loot: ${priority.join(', ')}`,
         `Safe Pocket: ${pkg.safePocket.join(', ')}`,
         `Consumables: ${pkg.consumables.join(', ')}`,
         `Weapon Goal: ${weapon}`,
+        `Workbench Focus: ${(workbenchProfiles[stage] || []).map(x => x.name).join(', ')}`,
         `Route: ${spawn.steps.join(' → ')}`,
       ].join('\n');
     }
@@ -748,7 +859,7 @@
       }
     });
 
-    [packageSelect, spawnSelect, playerInput, weaponInput].forEach(el => {
+    [packageSelect, spawnSelect, playerInput, weaponPreset, weaponCustom, profileStage].forEach(el => {
       el.addEventListener('input', updateView);
       el.addEventListener('change', updateView);
     });
@@ -756,6 +867,7 @@
     populateControls();
     packageSelect.value = 'pvp';
     spawnSelect.value = 'spaceport';
+    weaponPreset.value = 'Stitcher IV';
     setViewMode('full');
     updateView();
   </script>
