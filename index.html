@@ -209,6 +209,31 @@
       </div>
     </div></div>
 
+    <div class="card" style="margin-top:18px;"><div class="card-inner">
+      <div class="section-title" style="font-size:22px;">Workbench Upgrade Tracker</div>
+      <div class="snapshot-grid" style="grid-template-columns:340px 1fr; align-items:start;">
+        <div class="mini-card stack">
+          <div>
+            <label for="workbenchSelect">Workbench</label>
+            <select id="workbenchSelect"></select>
+          </div>
+          <div>
+            <label for="workbenchCurrentLevel">Current Level</label>
+            <select id="workbenchCurrentLevel"></select>
+          </div>
+          <div>
+            <label for="workbenchTargetLevel">Target Level</label>
+            <select id="workbenchTargetLevel"></select>
+          </div>
+          <div id="upgradeStatusBox" class="summary-box" style="font-size:12px;"></div>
+        </div>
+        <div class="mini-card">
+          <h3>Missing Materials From Stash</h3>
+          <div id="upgradeNeedsGrid" class="priority-grid"></div>
+        </div>
+      </div>
+    </div></div>
+
     <div class="card stash-card" style="margin-top:18px;"><div class="card-inner">
       <div class="section-title" style="font-size:22px;">Stash Tracker</div>
       <div id="stashGrid" class="priority-grid" style="grid-template-columns:repeat(4,minmax(0,1fr));"></div>
@@ -258,7 +283,69 @@
       endgame:[{name:'PvP Craft Loop',level:'Max',icon:'⚔️',need:['Shield Charger','Bandage','Stim','Medium Gun Parts'],focus:'PvP sustain and raid prep'},{name:'Weapon Upgrades',level:'Max',icon:'🔧',need:['Battery','Magnets','Wires','Heavy Gun Parts'],focus:'Top-end weapons and upgrades'},{name:'Support Refill',level:'Max',icon:'➕',need:['Bandage','Stim','Shield Charger'],focus:'Heals and support loop'},{name:'ARC Materials',level:'Max',icon:'🪙',need:['ARC Alloy','ARC Powercell'],focus:'Premium material maintenance'}],
       recovery:[{name:'Cheap Rebuild',level:'Recovery',icon:'🛠️',need:['Battery','Magnets','Wires'],focus:'Get back on your feet'},{name:'Safe Pocket Value',level:'Recovery',icon:'🎒',need:['Battery','Stim'],focus:'Protect guaranteed value'},{name:'Medical Refill',level:'Recovery',icon:'🩹',need:['Bandage','Stim'],focus:'Restore sustain first'},{name:'Weapon Restart',level:'Recovery',icon:'🎯',need:['Light Gun Parts','Medium Gun Parts'],focus:'Rebuild serviceable weapons'}]
     };
-    const defaultProfiles={Jartukainen:{name:'Jartukainen',weaponPreset:'Stitcher IV',weaponCustom:'',package:'pvp',spawn:'spaceport',stage:'endgame',stash:{Battery:8,Magnets:5,Wires:9,'Crude Oil':2,Canister:4,Bandage:6,'Shield Charger':4,Stim:5,'Medium Gun Parts':5,'Heavy Gun Parts':2,'Light Gun Parts':3,'Plastic Parts':6,Fabric:5,'Metal Parts':4,'Rubber Parts':2,'ARC Alloy':3,Chemicals:2,'ARC Powercell':1}}};
+
+    const workbenchUpgradeData = {
+      'Scrappy': {
+        max: 6,
+        levels: {
+          1: {},
+          2: {'Battery': 2, 'Wires': 3},
+          3: {'Battery': 4, 'Wires': 6, 'Magnets': 3},
+          4: {'Battery': 6, 'Wires': 8, 'Magnets': 5, 'Metal Parts': 6},
+          5: {'Battery': 8, 'Wires': 10, 'Magnets': 6, 'ARC Alloy': 3},
+          6: {'Battery': 10, 'Wires': 12, 'Magnets': 8, 'ARC Powercell': 2}
+        }
+      },
+      'Gunsmith': {
+        max: 3,
+        levels: {
+          1: {'Metal Parts': 20, 'Rubber Parts': 30},
+          2: {'Metal Parts': 30, 'Rubber Parts': 40, 'Battery': 8},
+          3: {'Metal Parts': 45, 'Rubber Parts': 60, 'Battery': 12, 'ARC Alloy': 5}
+        }
+      },
+      'Gear Bench': {
+        max: 3,
+        levels: {
+          1: {'Plastic Parts': 25, 'Fabric': 30},
+          2: {'Plastic Parts': 35, 'Fabric': 40, 'Wires': 8},
+          3: {'Plastic Parts': 50, 'Fabric': 55, 'Wires': 12, 'ARC Alloy': 6}
+        }
+      },
+      'Medical Lab': {
+        max: 3,
+        levels: {
+          1: {'Fabric': 50, 'ARC Alloy': 6},
+          2: {'Fabric': 65, 'ARC Alloy': 8, 'Chemicals': 10},
+          3: {'Fabric': 80, 'ARC Alloy': 12, 'Chemicals': 18, 'Stim': 8}
+        }
+      },
+      'Utility Station': {
+        max: 3,
+        levels: {
+          1: {'Plastic Parts': 50, 'ARC Alloy': 6},
+          2: {'Plastic Parts': 65, 'ARC Alloy': 8, 'Magnets': 10},
+          3: {'Plastic Parts': 80, 'ARC Alloy': 12, 'Magnets': 16, 'Battery': 8}
+        }
+      },
+      'Explosives Station': {
+        max: 3,
+        levels: {
+          1: {'Chemicals': 50, 'ARC Alloy': 6},
+          2: {'Chemicals': 65, 'ARC Alloy': 8, 'Canister': 10},
+          3: {'Chemicals': 80, 'ARC Alloy': 12, 'Canister': 16, 'Crude Oil': 10}
+        }
+      },
+      'Refiner': {
+        max: 3,
+        levels: {
+          1: {'Metal Parts': 60, 'ARC Powercell': 5},
+          2: {'Metal Parts': 80, 'ARC Powercell': 8, 'Battery': 10},
+          3: {'Metal Parts': 100, 'ARC Powercell': 12, 'Battery': 16, 'Magnets': 12}
+        }
+      }
+    };
+    const defaultProfiles={Jartukainen:{name:'Jartukainen',weaponPreset:'Stitcher IV',weaponCustom:'',package:'pvp',spawn:'spaceport',stage:'endgame',selectedWorkbench:'Gunsmith',workbenchCurrentLevel:1,workbenchTargetLevel:2,stash:{Battery:8,Magnets:5,Wires:9,'Crude Oil':2,Canister:4,Bandage:6,'Shield Charger':4,Stim:5,'Medium Gun Parts':5,'Heavy Gun Parts':2,'Light Gun Parts':3,'Plastic Parts':6,Fabric:5,'Metal Parts':4,'Rubber Parts':2,'ARC Alloy':3,Chemicals:2,'ARC Powercell':1}}};
 
     const packageSelect=document.getElementById('package');
     const spawnSelect=document.getElementById('spawn');
@@ -285,6 +372,11 @@
     const profileMeta=document.getElementById('profileMeta');
     const imageLibraryGrid=document.getElementById('imageLibraryGrid');
     const summaryBox=document.getElementById('summaryBox');
+    const workbenchSelect=document.getElementById('workbenchSelect');
+    const workbenchCurrentLevel=document.getElementById('workbenchCurrentLevel');
+    const workbenchTargetLevel=document.getElementById('workbenchTargetLevel');
+    const upgradeStatusBox=document.getElementById('upgradeStatusBox');
+    const upgradeNeedsGrid=document.getElementById('upgradeNeedsGrid');
     const copyBtn=document.getElementById('copyBtn');
     const modeBtn=document.getElementById('modeBtn');
 
@@ -299,10 +391,11 @@
 
     function fillSelect(select, options){select.innerHTML='';options.forEach(({value,label})=>{const opt=document.createElement('option');opt.value=value;opt.textContent=label;select.appendChild(opt);});}
     function populateControls(){
-      fillSelect(packageSelect,Object.entries(packageData).map(([k,v])=>({value:k,label:v.label})));
-      fillSelect(spawnSelect,Object.entries(spawnData).map(([k,v])=>({value:k,label:v.label})));
-      fillSelect(weaponPreset,weaponOptions.map(v=>({value:v,label:v})));
-      fillSelect(profileSelect,Object.keys(profiles).map(v=>({value:v,label:v})));
+      fillSelect(workbenchSelect,Object.keys(workbenchUpgradeData).map(v=>({value:v,label:v})));
+      packageSelect.innerHTML='';
+      spawnSelect.innerHTML='';
+      weaponPreset.innerHTML='';
+      profileSelect.innerHTML='';
       presetGrid.innerHTML='';
       Object.entries(packageData).forEach(([key,pkg])=>{const btn=document.createElement('button');btn.type='button';btn.className='preset';btn.dataset.preset=key;btn.innerHTML=`<strong>${pkg.label}</strong><span>${pkg.short}</span>`;btn.addEventListener('click',()=>{packageSelect.value=key;updateView();});presetGrid.appendChild(btn);});
     }
@@ -312,25 +405,81 @@
     function renderPriority(items){priorityGrid.innerHTML='';items.forEach(item=>{const meta=itemMeta[item]||{hint:'loot'};const card=document.createElement('div');card.className='loot-item';card.innerHTML=`<div class="loot-icon">${renderIconContent(item)}</div><strong>${item}</strong><small>${meta.hint||''}</small>`;priorityGrid.appendChild(card);});}
     function renderWorkbench(stageKey){const cards=workbenchProfiles[stageKey]||[];workbenchGrid.innerHTML='';cards.forEach(cardData=>{const card=document.createElement('div');card.className='workbench-card';card.innerHTML=`<div class="workbench-top"><div><div class="workbench-name">${cardData.name}</div><div class="workbench-level">Level ${cardData.level}</div></div><div class="workbench-icon">${cardData.icon}</div></div><div class="workbench-body"><div class="workbench-focus">${cardData.focus}</div><div class="need-list">${cardData.need.map(need=>`<span class="need-pill">${need}</span>`).join('')}</div></div>`;workbenchGrid.appendChild(card);});}
     function renderStash(profile){stashGrid.innerHTML='';stashHighlights.innerHTML='';const stash=profile.stash||{};stashItems.forEach(item=>{const meta=itemMeta[item]||{hint:'loot'};const amount=stash[item]??0;const card=document.createElement('div');card.className='loot-item';card.style.minHeight='178px';card.innerHTML=`<div class="loot-icon">${renderIconContent(item)}</div><strong>${item}</strong><small>${meta.hint||''}</small><input data-stash-item="${item}" type="number" min="0" value="${amount}" style="margin-top:6px;text-align:center;font-weight:900;">`;stashGrid.appendChild(card);});stashItems.map(name=>[name,stash[name]??0]).sort((a,b)=>a[1]-b[1]).slice(0,4).forEach(([name,amount])=>{const pill=document.createElement('span');pill.className='pill';pill.textContent=`${name}: ${amount}`;stashHighlights.appendChild(pill);});}
+    function populateWorkbenchLevelControls(selectedWorkbench, currentLevel, targetLevel){
+      const data=workbenchUpgradeData[selectedWorkbench];
+      if(!data)return;
+      const max=data.max;
+      fillSelect(workbenchCurrentLevel,Array.from({length:max},(_,i)=>({value:String(i+1),label:String(i+1)})));
+      fillSelect(workbenchTargetLevel,Array.from({length:max},(_,i)=>({value:String(i+1),label:String(i+1)})));
+      workbenchCurrentLevel.value=String(Math.min(currentLevel||1,max));
+      workbenchTargetLevel.value=String(Math.min(targetLevel||Math.min((currentLevel||1)+1,max),max));
+      if(Number(workbenchTargetLevel.value)<Number(workbenchCurrentLevel.value)) workbenchTargetLevel.value=workbenchCurrentLevel.value;
+    }
+
+    function calculateUpgradeNeeds(profile){
+      const workbench=workbenchSelect.value;
+      const data=workbenchUpgradeData[workbench];
+      const stash=(profile&&profile.stash)||{};
+      if(!data) return {totals:{}, missing:{}, current:1, target:1};
+      const current=Number(workbenchCurrentLevel.value||1);
+      const target=Number(workbenchTargetLevel.value||current);
+      const totals={};
+      for(let lvl=current; lvl<=target; lvl++){
+        const req=data.levels[lvl]||{};
+        Object.entries(req).forEach(([item,amount])=>{ totals[item]=(totals[item]||0)+amount; });
+      }
+      const missing={};
+      Object.entries(totals).forEach(([item,amount])=>{
+        missing[item]=Math.max(0, amount-(stash[item]||0));
+      });
+      return {totals, missing, current, target};
+    }
+
+    function renderUpgradeNeeds(profile){
+      const result=calculateUpgradeNeeds(profile);
+      const workbench=workbenchSelect.value;
+      upgradeNeedsGrid.innerHTML='';
+      const entries=Object.entries(result.totals);
+      if(!entries.length){
+        upgradeStatusBox.textContent=`${workbench}: nothing required for this selection.`;
+        return;
+      }
+      const allReady=Object.values(result.missing).every(v=>v===0);
+      upgradeStatusBox.textContent=`${workbench} levels ${result.current} → ${result.target}. ${allReady ? 'All materials ready in stash.' : 'Some materials are still missing.'}`;
+      entries.forEach(([item,need])=>{
+        const have=(profile.stash&&profile.stash[item])||0;
+        const missing=result.missing[item]||0;
+        const meta=itemMeta[item]||{hint:'upgrade material'};
+        const card=document.createElement('div');
+        card.className='loot-item';
+        card.innerHTML=`<div class="loot-icon">${renderIconContent(item)}</div><strong>${item}</strong><small>Need ${need} • Have ${have} • ${missing>0 ? 'Missing '+missing : 'Ready'}</small>`;
+        if(missing===0) card.style.outline='2px solid rgba(86,240,183,.55)';
+        else card.style.outline='2px solid rgba(255,75,75,.45)';
+        upgradeNeedsGrid.appendChild(card);
+      });
+    }
+
     function renderImageLibrary(){imageLibraryGrid.innerHTML='';stashItems.forEach(item=>{const meta=itemMeta[item]||{icon:'📦',hint:'loot'};const preview=itemImages[item]||getMetaImage(item);const card=document.createElement('div');card.className='image-card';card.innerHTML=`<div class="mini-preview"><img src="${preview}" alt="${item}" loading="lazy" onerror="this.onerror=null;this.replaceWith(document.createTextNode('${meta.icon||'📦'}'))"></div><div style="text-align:center;font-weight:900;margin-bottom:4px;font-size:13px;color:var(--text);">${item}</div><div style="text-align:center;color:var(--muted);font-size:11px;margin-bottom:10px;">${meta.hint||''}</div><input type="file" accept="image/*" data-image-item="${item}"><button type="button" class="ghost-btn tiny-btn" data-clear-image="${item}">Use default CDN image</button>`;imageLibraryGrid.appendChild(card);});}
-    function loadProfile(name){const profile=profiles[name];if(!profile)return;playerInput.value=profile.name||name;weaponPreset.value=profile.weaponPreset||'Stitcher IV';weaponCustom.value=profile.weaponCustom||'';packageSelect.value=profile.package||'pvp';spawnSelect.value=profile.spawn||'spaceport';profileStage.value=profile.stage||'endgame';renderStash(profile);}
-    function persistCurrentProfile(){const key=profileSelect.value||playerInput.value||'Player';if(!profiles[key])profiles[key]={name:key,stash:Object.fromEntries(stashItems.map(i=>[i,0]))};profiles[key].name=playerInput.value||key;profiles[key].weaponPreset=weaponPreset.value;profiles[key].weaponCustom=weaponCustom.value;profiles[key].package=packageSelect.value;profiles[key].spawn=spawnSelect.value;profiles[key].stage=profileStage.value;profiles[key].stash=profiles[key].stash||{};document.querySelectorAll('[data-stash-item]').forEach(input=>{profiles[key].stash[input.dataset.stashItem]=Number(input.value||0);});saveProfiles();}
+    function loadProfile(name){const profile=profiles[name];if(!profile)return;playerInput.value=profile.name||name;weaponPreset.value=profile.weaponPreset||'Stitcher IV';weaponCustom.value=profile.weaponCustom||'';packageSelect.value=profile.package||'pvp';spawnSelect.value=profile.spawn||'spaceport';profileStage.value=profile.stage||'endgame';workbenchSelect.value=profile.selectedWorkbench||'Gunsmith';populateWorkbenchLevelControls(workbenchSelect.value, profile.workbenchCurrentLevel||1, profile.workbenchTargetLevel||2);renderStash(profile);}
+    function persistCurrentProfile(){const key=profileSelect.value||playerInput.value||'Player';if(!profiles[key])profiles[key]={name:key,stash:Object.fromEntries(stashItems.map(i=>[i,0]))};profiles[key].name=playerInput.value||key;profiles[key].weaponPreset=weaponPreset.value;profiles[key].weaponCustom=weaponCustom.value;profiles[key].package=packageSelect.value;profiles[key].spawn=spawnSelect.value;profiles[key].stage=profileStage.value;profiles[key].selectedWorkbench=workbenchSelect.value;profiles[key].workbenchCurrentLevel=Number(workbenchCurrentLevel.value||1);profiles[key].workbenchTargetLevel=Number(workbenchTargetLevel.value||profiles[key].workbenchCurrentLevel);profiles[key].stash=profiles[key].stash||{};document.querySelectorAll('[data-stash-item]').forEach(input=>{profiles[key].stash[input.dataset.stashItem]=Number(input.value||0);});saveProfiles();}
     function updatePresetButtons(activeKey){document.querySelectorAll('.preset').forEach(btn=>btn.classList.toggle('active',btn.dataset.preset===activeKey));}
-    function updateView(){const pkg=packageData[packageSelect.value||'pvp'];const spawn=spawnData[spawnSelect.value||'spaceport'];const player=playerInput.value||'Player';const weapon=weaponCustom.value.trim()||weaponPreset.value||'Stitcher IV';const stage=profileStage.value||'endgame';const profileName=profileSelect.value||player;const currentProfile=profiles[profileName]||{stash:{}};const priority=getPriorityList(pkg,spawn);updatePresetButtons(packageSelect.value);packageSummary.textContent=pkg.short;statusText.textContent=pkg.status;spawnName.textContent=spawn.label;routeSummary.textContent=spawn.routeSummary;renderRoute(spawn.steps);renderPriority(priority);renderPills(safePocketRow,pkg.safePocket);renderPills(consumablesRow,pkg.consumables);renderWorkbench(stage);renderStash(currentProfile);weaponGoalText.textContent=weapon;profileMeta.textContent=`Profile: ${profileName}. Stage: ${profileStage.options[profileStage.selectedIndex].text}. One profile per player keeps stash, workbench focus, and weapon goal personal.`;summaryBox.textContent=['ARC RAID PLAN',`Player: ${player}`,`Profile: ${profileName}`,`Package: ${pkg.label}`,`Spawn: ${spawn.label}`,`Profile Stage: ${profileStage.options[profileStage.selectedIndex].text}`,`Priority Loot: ${priority.join(', ')}`,`Safe Pocket: ${pkg.safePocket.join(', ')}`,`Consumables: ${pkg.consumables.join(', ')}`,`Weapon Goal: ${weapon}`,`Workbench Focus: ${(workbenchProfiles[stage]||[]).map(x=>x.name).join(', ')}`,`Route: ${spawn.steps.join(' → ')}`].join('\n');persistCurrentProfile();}
+    function updateView(){const pkg=packageData[packageSelect.value||'pvp'];const spawn=spawnData[spawnSelect.value||'spaceport'];const player=playerInput.value||'Player';const weapon=weaponCustom.value.trim()||weaponPreset.value||'Stitcher IV';const stage=profileStage.value||'endgame';const profileName=profileSelect.value||player;const currentProfile=profiles[profileName]||{stash:{}};const priority=getPriorityList(pkg,spawn);updatePresetButtons(packageSelect.value);packageSummary.textContent=pkg.short;statusText.textContent=pkg.status;spawnName.textContent=spawn.label;routeSummary.textContent=spawn.routeSummary;renderRoute(spawn.steps);renderPriority(priority);renderPills(safePocketRow,pkg.safePocket);renderPills(consumablesRow,pkg.consumables);renderWorkbench(stage);renderStash(currentProfile);renderUpgradeNeeds(currentProfile);weaponGoalText.textContent=weapon;profileMeta.textContent=`Profile: ${profileName}. Stage: ${profileStage.options[profileStage.selectedIndex].text}. One profile per player keeps stash, workbench focus, and weapon goal personal.`;summaryBox.textContent=['ARC RAID PLAN',`Player: ${player}`,`Profile: ${profileName}`,`Package: ${pkg.label}`,`Spawn: ${spawn.label}`,`Profile Stage: ${profileStage.options[profileStage.selectedIndex].text}`,`Priority Loot: ${priority.join(', ')}`,`Safe Pocket: ${pkg.safePocket.join(', ')}`,`Consumables: ${pkg.consumables.join(', ')}`,`Weapon Goal: ${weapon}`,`Workbench Focus: ${(workbenchProfiles[stage]||[]).map(x=>x.name).join(', ')}`,`Upgrade Target: ${workbenchSelect.value} ${workbenchCurrentLevel.value} → ${workbenchTargetLevel.value}`,`Route: ${spawn.steps.join(' → ')}`].join('
+');persistCurrentProfile();}
     function setViewMode(mode){document.body.classList.toggle('glance',mode==='glance');document.querySelectorAll('.toggle-btn').forEach(btn=>btn.classList.toggle('active',btn.dataset.view===mode));modeBtn.textContent=mode==='glance'?'Full View':'Glance Mode';}
 
     copyBtn.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(summaryBox.textContent);copyBtn.textContent='Copied';setTimeout(()=>copyBtn.textContent='Copy Raid Plan',1200);}catch{alert('Copy failed on this device.');}});
     modeBtn.addEventListener('click',()=>setViewMode(document.body.classList.contains('glance')?'full':'glance'));
     document.addEventListener('click',event=>{if(event.target.matches('.toggle-btn'))setViewMode(event.target.dataset.view);if(event.target.matches('[data-clear-image]')){delete itemImages[event.target.dataset.clearImage];saveImages();renderImageLibrary();updateView();}});
-    newProfileBtn.addEventListener('click',()=>{const name=prompt('New profile name');if(!name)return;if(profiles[name])return alert('That profile already exists.');profiles[name]={name,weaponPreset:'Stitcher IV',weaponCustom:'',package:'loot',spawn:'dam',stage:'early',stash:Object.fromEntries(stashItems.map(i=>[i,0]))};saveProfiles();populateControls();profileSelect.value=name;loadProfile(name);updateView();});
+    newProfileBtn.addEventListener('click',()=>{const name=prompt('New profile name');if(!name)return;if(profiles[name])return alert('That profile already exists.');profiles[name]={name,weaponPreset:'Stitcher IV',weaponCustom:'',package:'loot',spawn:'dam',stage:'early',selectedWorkbench:'Gunsmith',workbenchCurrentLevel:1,workbenchTargetLevel:2,stash:Object.fromEntries(stashItems.map(i=>[i,0]))};saveProfiles();populateControls();profileSelect.value=name;loadProfile(name);updateView();});
     deleteProfileBtn.addEventListener('click',()=>{const name=profileSelect.value;if(!name)return;if(Object.keys(profiles).length===1)return alert('Keep at least one profile.');if(!confirm(`Delete profile ${name}?`))return;delete profiles[name];saveProfiles();populateControls();profileSelect.value=Object.keys(profiles)[0];loadProfile(profileSelect.value);updateView();});
-    [packageSelect,spawnSelect,playerInput,weaponPreset,weaponCustom,profileStage,profileSelect].forEach(el=>{el.addEventListener('input',updateView);el.addEventListener('change',()=>{if(el===profileSelect)loadProfile(profileSelect.value);updateView();});});
+    [packageSelect,spawnSelect,playerInput,weaponPreset,weaponCustom,profileStage,profileSelect,workbenchSelect,workbenchCurrentLevel,workbenchTargetLevel].forEach(el=>{el.addEventListener('input',updateView);el.addEventListener('change',()=>{if(el===profileSelect) loadProfile(profileSelect.value); if(el===workbenchSelect){ populateWorkbenchLevelControls(workbenchSelect.value,1,2);} if(el===workbenchCurrentLevel && Number(workbenchTargetLevel.value)<Number(workbenchCurrentLevel.value)){workbenchTargetLevel.value=workbenchCurrentLevel.value;} updateView();});});
     document.addEventListener('input',event=>{if(event.target.matches('[data-stash-item]')){persistCurrentProfile();updateView();}});
     document.addEventListener('change',event=>{if(event.target.matches('[data-image-item]')){const file=event.target.files&&event.target.files[0];const item=event.target.dataset.imageItem;if(!file)return;const reader=new FileReader();reader.onload=()=>{itemImages[item]=reader.result;saveImages();renderImageLibrary();updateView();};reader.readAsDataURL(file);}});
 
     populateControls();
     profileSelect.value=Object.keys(profiles)[0];
     loadProfile(profileSelect.value);
+    populateWorkbenchLevelControls(workbenchSelect.value||'Gunsmith', Number(workbenchCurrentLevel.value||1), Number(workbenchTargetLevel.value||2));
     renderImageLibrary();
     setViewMode('full');
     updateView();
