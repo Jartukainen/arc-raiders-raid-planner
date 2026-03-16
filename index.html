@@ -1,384 +1,272 @@
-import React, { useMemo, useState } from "react";
-import { motion } from "framer-motion";
-import {
-  MapPinned,
-  Crosshair,
-  Backpack,
-  ShieldPlus,
-  Syringe,
-  Battery,
-  Zap,
-  Package,
-  Copy,
-  Upload,
-  ImagePlus,
-  Route,
-  Sword,
-  Wrench,
-  CheckCircle2,
-} from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ARC Raiders Raid Planner</title>
 
-const packages = {
-  loot: {
-    label: "Loot Run",
-    target: ["Battery", "Magnets", "Wires", "Crude Oil", "Canister"],
-    safePocket: ["Battery", "Magnets"],
-    consumables: ["Bandage", "Stim"],
-    weaponGoal: "Light or recovered weapon",
-    summary: "Low-risk refill run. Avoid fights, loot quickly, extract early.",
-  },
-  rebuild: {
-    label: "Rebuild After Losses",
-    target: ["Battery", "Magnets", "Wires", "Bandage"],
-    safePocket: ["Battery", "Magnets", "Stim"],
-    consumables: ["Bandage", "Stim"],
-    weaponGoal: "Rebuild toward Stitcher IV",
-    summary: "Use when stash is almost empty. Prioritize guaranteed value over combat.",
-  },
-  pvp: {
-    label: "PvP Push",
-    target: ["Shield Charger", "Bandage", "Stim", "Medium Gun Parts", "Heavy Gun Parts"],
-    safePocket: ["Stim", "Bandage", "Shield Charger"],
-    consumables: ["Bandage", "Shield Charger", "Stim"],
-    weaponGoal: "Stitcher IV / Il Toro IV",
-    summary: "Take proper gear, plan for sustain, and expect pressure from Raiders.",
-  },
-  trials: {
-    label: "Trials Prep",
-    target: ["Stim", "Bandage", "Shield Charger", "Battery"],
-    safePocket: ["Stim", "Bandage"],
-    consumables: ["Stim", "Bandage", "Shield Charger"],
-    weaponGoal: "Stable PvE / mobility setup",
-    summary: "Focus on movement, sustain and completion reliability.",
-  },
-  weapon: {
-    label: "Weapon Upgrade Run",
-    target: ["Medium Gun Parts", "Heavy Gun Parts", "Battery", "Magnets", "Wires"],
-    safePocket: ["Battery", "Magnets"],
-    consumables: ["Bandage", "Stim"],
-    weaponGoal: "Upgrade into Stitcher IV or Il Toro IV",
-    summary: "Prioritize weapon parts and upgrade materials, not random loot.",
-  },
+<style>
+body{
+font-family:Arial,Helvetica,sans-serif;
+margin:0;
+background:linear-gradient(135deg,#ffe6c7,#ffd4a2);
+color:#222;
+}
+
+.container{
+max-width:1100px;
+margin:auto;
+padding:20px;
+}
+
+.card{
+background:white;
+border-radius:12px;
+padding:20px;
+margin-bottom:20px;
+box-shadow:0 4px 12px rgba(0,0,0,.1);
+}
+
+h1{
+margin-top:0;
+}
+
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:20px;
+}
+
+.loot-grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:12px;
+margin-top:10px;
+}
+
+.loot-item{
+background:#fafafa;
+border-radius:10px;
+padding:10px;
+text-align:center;
+border:1px solid #ddd;
+}
+
+.loot-item img{
+width:60px;
+height:60px;
+object-fit:contain;
+display:block;
+margin:auto;
+}
+
+select,input{
+padding:8px;
+border-radius:8px;
+border:1px solid #ccc;
+width:100%;
+}
+
+.badge{
+display:inline-block;
+background:#ff7a00;
+color:white;
+padding:4px 10px;
+border-radius:20px;
+font-size:12px;
+margin-right:6px;
+margin-bottom:4px;
+}
+
+.summary{
+background:#fff7ed;
+padding:12px;
+border-radius:10px;
+font-size:13px;
+white-space:pre-wrap;
+}
+
+button{
+background:#ff7a00;
+border:none;
+color:white;
+padding:10px 16px;
+border-radius:10px;
+cursor:pointer;
+}
+
+@media(max-width:800px){
+.grid{grid-template-columns:1fr;}
+.loot-grid{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>ARC Raiders Raid Planner</h1>
+
+<div class="grid">
+
+<div class="card">
+
+<label>Player</label>
+<input id="player" value="Jarno">
+
+<label>Weapon Goal</label>
+<input id="weapon" value="Stitcher IV">
+
+<label>Raid Package</label>
+<select id="package">
+<option value="loot">Loot Run</option>
+<option value="rebuild">Rebuild</option>
+<option value="pvp">PvP Push</option>
+<option value="trials">Trials</option>
+<option value="weapon">Weapon Upgrade</option>
+</select>
+
+<label>Spawn</label>
+<select id="spawn">
+<option value="dam">Dam</option>
+<option value="spaceport">Spaceport</option>
+<option value="bluegate">Blue Gate</option>
+<option value="stella">Stella Montis</option>
+<option value="buried">Buried City</option>
+</select>
+
+</div>
+
+<div class="card">
+
+<h3>Raid Snapshot</h3>
+
+<div id="priority" class="loot-grid"></div>
+
+<h4>Safe Pocket</h4>
+<div id="safe"></div>
+
+<h4>Consumables</h4>
+<div id="cons"></div>
+
+<h4>Weapon Goal</h4>
+<div id="weaponText"></div>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h3>Raid Summary</h3>
+<div id="summary" class="summary"></div>
+<button onclick="copySummary()">Copy Raid Plan</button>
+
+</div>
+
+</div>
+
+<script>
+
+const packages={
+loot:{
+target:["Battery","Magnets","Wires","Crude Oil","Canister"],
+safe:["Battery","Magnets"],
+cons:["Bandage","Stim"]
+},
+rebuild:{
+target:["Battery","Magnets","Wires","Bandage"],
+safe:["Battery","Magnets","Stim"],
+cons:["Bandage","Stim"]
+},
+pvp:{
+target:["Shield Charger","Bandage","Stim","Medium Gun Parts"],
+safe:["Stim","Bandage"],
+cons:["Bandage","Shield Charger","Stim"]
+},
+trials:{
+target:["Stim","Bandage","Shield Charger","Battery"],
+safe:["Stim","Bandage"],
+cons:["Stim","Bandage"]
+},
+weapon:{
+target:["Medium Gun Parts","Heavy Gun Parts","Battery"],
+safe:["Battery","Magnets"],
+cons:["Bandage","Stim"]
+}
 };
 
-const spawnMap = {
-  dam: {
-    label: "Dam",
-    route: "Industrial path → oil area → weapon parts → extract",
-    focusBoost: ["Battery", "Crude Oil", "Medium Gun Parts", "Heavy Gun Parts"],
-  },
-  spaceport: {
-    label: "Spaceport",
-    route: "Electronics loop → utility rooms → containers → extract",
-    focusBoost: ["Magnets", "Wires", "Battery", "Medium Gun Parts"],
-  },
-  bluegate: {
-    label: "Blue Gate",
-    route: "Utility line → shield loot → component rooms → extract",
-    focusBoost: ["Magnets", "Wires", "Shield Charger", "Light Gun Parts"],
-  },
-  stella: {
-    label: "Stella Montis",
-    route: "Medical path → support loot → canisters → safe exit",
-    focusBoost: ["Bandage", "Shield Charger", "Stim", "Canister"],
-  },
-  buried: {
-    label: "Buried City",
-    route: "High-risk route → rare loot → fast reset if pressured",
-    focusBoost: ["Heavy Gun Parts", "Bandage", "Crude Oil"],
-  },
+const spawns={
+dam:"Industrial path → oil area → weapon parts → extract",
+spaceport:"Electronics loop → containers → extract",
+bluegate:"Utility line → components → extract",
+stella:"Medical path → supplies → extract",
+buried:"High risk rare loot → extract fast"
 };
 
-const itemSeeds = [
-  { name: "Battery", icon: Battery },
-  { name: "Magnets", icon: Zap },
-  { name: "Wires", icon: Route },
-  { name: "Crude Oil", icon: Package },
-  { name: "Canister", icon: Backpack },
-  { name: "Bandage", icon: ShieldPlus },
-  { name: "Shield Charger", icon: ShieldPlus },
-  { name: "Stim", icon: Syringe },
-  { name: "Medium Gun Parts", icon: Wrench },
-  { name: "Heavy Gun Parts", icon: Sword },
-  { name: "Light Gun Parts", icon: Crosshair },
-];
+function update(){
 
-const defaultImages = Object.fromEntries(itemSeeds.map((i) => [i.name, ""]));
+const pkg=document.getElementById("package").value;
+const spawn=document.getElementById("spawn").value;
+const player=document.getElementById("player").value;
+const weapon=document.getElementById("weapon").value;
 
-function scorePriority(pkgTargets, spawnTargets) {
-  const unique = Array.from(new Set([...spawnTargets, ...pkgTargets]));
-  return unique.sort((a, b) => {
-    const aSpawn = spawnTargets.indexOf(a);
-    const bSpawn = spawnTargets.indexOf(b);
-    const aPkg = pkgTargets.indexOf(a);
-    const bPkg = pkgTargets.indexOf(b);
-    const aScore = (aSpawn === -1 ? 99 : aSpawn) + (aPkg === -1 ? 99 : aPkg);
-    const bScore = (bSpawn === -1 ? 99 : bSpawn) + (bPkg === -1 ? 99 : bPkg);
-    return aScore - bScore;
-  });
+const p=packages[pkg];
+
+const lootDiv=document.getElementById("priority");
+lootDiv.innerHTML="";
+
+p.target.slice(0,6).forEach(l=>{
+const div=document.createElement("div");
+div.className="loot-item";
+div.innerHTML=`<strong>${l}</strong>`;
+lootDiv.appendChild(div);
+});
+
+const safe=document.getElementById("safe");
+safe.innerHTML="";
+p.safe.forEach(s=>{
+safe.innerHTML+=`<span class="badge">${s}</span>`;
+});
+
+const cons=document.getElementById("cons");
+cons.innerHTML="";
+p.cons.forEach(s=>{
+cons.innerHTML+=`<span class="badge">${s}</span>`;
+});
+
+document.getElementById("weaponText").innerText=weapon;
+
+const summary=`ARC RAID PLAN
+Player: ${player}
+Package: ${pkg}
+Spawn: ${spawn}
+Priority Loot: ${p.target.join(", ")}
+Safe Pocket: ${p.safe.join(", ")}
+Consumables: ${p.cons.join(", ")}
+Weapon Goal: ${weapon}
+Route: ${spawns[spawn]}
+`;
+
+document.getElementById("summary").innerText=summary;
+
 }
 
-function ItemVisual({ item, image, onPasteClick }) {
-  const Icon = item.icon;
-  return (
-    <div className="rounded-2xl border border-orange-300 bg-white/70 p-3">
-      <div className="mb-2 aspect-square overflow-hidden rounded-xl border border-orange-300 bg-white/80 backdrop-blur flex items-center justify-center">
-        {image ? (
-          <img src={image} alt={item.name} className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex flex-col items-center gap-2 text-zinc-500">
-            <Icon className="h-8 w-8" />
-            <span className="text-[11px]">paste image</span>
-          </div>
-        )}
-      </div>
-      <div className="mb-2 text-sm font-medium text-zinc-900">{item.name}</div>
-      <Button variant="outline" size="sm" className="w-full rounded-xl border-zinc-700" onClick={onPasteClick}>
-        <ImagePlus className="mr-2 h-4 w-4" /> Paste / replace
-      </Button>
-    </div>
-  );
+function copySummary(){
+navigator.clipboard.writeText(
+document.getElementById("summary").innerText
+);
+alert("Raid plan copied!");
 }
 
-export default function ArcRaidersRaidCard() {
-  const [raidPackage, setRaidPackage] = useState("rebuild");
-  const [spawn, setSpawn] = useState("dam");
-  const [player, setPlayer] = useState("Jarno");
-  const [weapon, setWeapon] = useState("Stitcher IV");
-  const [images, setImages] = useState(defaultImages);
-  const [activePasteTarget, setActivePasteTarget] = useState("");
+document.querySelectorAll("select,input").forEach(e=>{
+e.addEventListener("change",update);
+});
 
-  const pkg = packages[raidPackage];
-  const spawnInfo = spawnMap[spawn];
+update();
 
-  const priorityLoot = useMemo(() => {
-    return scorePriority(pkg.target, spawnInfo.focusBoost).slice(0, 6);
-  }, [pkg, spawnInfo]);
+</script>
 
-  const prioritizedItems = itemSeeds.filter((i) => priorityLoot.includes(i.name));
-
-  const status = useMemo(() => {
-    if (raidPackage === "pvp") return "PvP READY";
-    if (raidPackage === "rebuild") return "REBUILD MODE";
-    if (raidPackage === "trials") return "TRIALS READY";
-    if (raidPackage === "weapon") return "UPGRADE RUN";
-    return "LOOT MODE";
-  }, [raidPackage]);
-
-  const raidSummary = [
-    `ARC RAID PLAN`,
-    `Player: ${player}`,
-    `Status: ${status}`,
-    `Package: ${pkg.label}`,
-    `Spawn: ${spawnInfo.label}`,
-    `Priority Loot: ${priorityLoot.join(", ")}`,
-    `Safe Pocket: ${pkg.safePocket.join(", ")}`,
-    `Consumables: ${pkg.consumables.join(", ")}`,
-    `Weapon Goal: ${weapon || pkg.weaponGoal}`,
-    `Route: ${spawnInfo.route}`,
-  ].join("\n");
-
-  const copySummary = async () => {
-    try {
-      await navigator.clipboard.writeText(raidSummary);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const onPasteArea = async (event) => {
-    if (!activePasteTarget) return;
-    const items = event.clipboardData?.items || [];
-    for (const item of items) {
-      if (item.type.startsWith("image/")) {
-        const file = item.getAsFile();
-        if (!file) continue;
-        const reader = new FileReader();
-        reader.onload = () => {
-          setImages((prev) => ({ ...prev, [activePasteTarget]: String(reader.result || "") }));
-          setActivePasteTarget("");
-        };
-        reader.readAsDataURL(file);
-        event.preventDefault();
-        return;
-      }
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-100 via-orange-100 to-amber-200 text-zinc-900" onPaste={onPasteArea}>
-      <div className="mx-auto max-w-7xl p-4 md:p-8">
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-          <Card className="rounded-3xl border-orange-300 bg-white/80 backdrop-blur shadow-2xl">
-            <CardHeader>
-              <CardTitle className="text-3xl">ARC Raiders Raid Card</CardTitle>
-              <CardDescription>
-                Built for a 5–10 second glance on a second monitor. Pick a package, choose a spawn, and generate a visual loot card.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label>Player</Label>
-                <Input value={player} onChange={(e) => setPlayer(e.target.value)} className="rounded-2xl border-orange-300 bg-white" />
-              </div>
-              <div className="space-y-2">
-                <Label>Weapon Goal</Label>
-                <Input value={weapon} onChange={(e) => setWeapon(e.target.value)} className="rounded-2xl border-orange-300 bg-white" />
-              </div>
-              <div className="space-y-2">
-                <Label>Raid Package</Label>
-                <Select value={raidPackage} onValueChange={setRaidPackage}>
-                  <SelectTrigger className="rounded-2xl border-orange-300 bg-white"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(packages).map(([key, value]) => (
-                      <SelectItem key={key} value={key}>{value.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Starting Area</Label>
-                <Select value={spawn} onValueChange={setSpawn}>
-                  <SelectTrigger className="rounded-2xl border-orange-300 bg-white"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(spawnMap).map(([key, value]) => (
-                      <SelectItem key={key} value={key}>{value.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="md:col-span-2 rounded-2xl border border-orange-300 bg-white/70 p-4">
-                <div className="mb-2 flex items-center gap-2 text-sm text-zinc-700">
-                  <Upload className="h-4 w-4" /> Copy/paste item images is supported.
-                </div>
-                <div className="text-sm text-zinc-600">
-                  Click <strong>Paste / replace</strong> on an item, then paste an image with Ctrl/Cmd+V. The image stays in the browser session for quick visual recognition.
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-3xl border-orange-300 bg-gradient-to-br from-orange-200 via-amber-200 to-orange-300 shadow-2xl">
-            <CardHeader>
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <CardTitle className="text-2xl">Raid Snapshot</CardTitle>
-                  <CardDescription>{pkg.summary}</CardDescription>
-                </div>
-                <Badge className="rounded-full bg-emerald-700 px-3 py-1">{status}</Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-[0.9fr_1.1fr]">
-                <div className="rounded-2xl border border-orange-300 bg-white/70 p-4">
-                  <div className="mb-3 flex items-center gap-2 font-medium"><MapPinned className="h-4 w-4" /> {spawnInfo.label}</div>
-                  <div className="aspect-[4/3] rounded-2xl border border-orange-300 bg-white/80 backdrop-blur p-4 flex flex-col justify-between">
-                    <div className="text-xs uppercase tracking-[0.2em] text-zinc-500">Map route</div>
-                    <div className="text-lg font-semibold">Spawn → Focus → Extract</div>
-                    <div className="text-sm text-zinc-600">{spawnInfo.route}</div>
-                  </div>
-                </div>
-                <div className="rounded-2xl border border-orange-300 bg-white/70 p-4">
-                  <div className="mb-3 text-sm uppercase tracking-[0.2em] text-zinc-500">Priority loot</div>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                    {prioritizedItems.map((item) => (
-                      <div key={item.name} className="rounded-2xl border border-orange-300 bg-white/80 backdrop-blur/80 p-3 text-center">
-                        <div className="mb-2 aspect-square overflow-hidden rounded-xl border border-orange-300 bg-white flex items-center justify-center">
-                          {images[item.name] ? (
-                            <img src={images[item.name]} alt={item.name} className="h-full w-full object-cover" />
-                          ) : (
-                            <item.icon className="h-8 w-8 text-zinc-500" />
-                          )}
-                        </div>
-                        <div className="text-xs font-medium text-zinc-900">{item.name}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-3">
-                <div className="rounded-2xl border border-orange-300 bg-white/70 p-4">
-                  <div className="mb-2 text-sm uppercase tracking-[0.2em] text-zinc-500">Safe Pocket</div>
-                  <div className="space-y-2">{pkg.safePocket.map((p) => <Badge key={p} variant="secondary" className="mr-2 rounded-full">{p}</Badge>)}</div>
-                </div>
-                <div className="rounded-2xl border border-orange-300 bg-white/70 p-4">
-                  <div className="mb-2 text-sm uppercase tracking-[0.2em] text-zinc-500">Consumables</div>
-                  <div className="space-y-2 text-sm">{pkg.consumables.map((c) => <div key={c} className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> {c}</div>)}</div>
-                </div>
-                <div className="rounded-2xl border border-orange-300 bg-white/70 p-4">
-                  <div className="mb-2 text-sm uppercase tracking-[0.2em] text-zinc-500">Weapon Goal</div>
-                  <div className="text-lg font-semibold">{weapon || pkg.weaponGoal}</div>
-                </div>
-              </div>
-
-              <Separator className="bg-zinc-800" />
-
-              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <pre className="whitespace-pre-wrap rounded-2xl bg-white/60 p-4 text-xs text-zinc-700">{raidSummary}</pre>
-                <Button onClick={copySummary} className="rounded-2xl"><Copy className="mr-2 h-4 w-4" /> Copy Raid Plan</Button>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <Tabs defaultValue="icons" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2 rounded-2xl bg-white/80 backdrop-blur p-1">
-            <TabsTrigger value="icons">Item Images</TabsTrigger>
-            <TabsTrigger value="notes">Design Notes</TabsTrigger>
-          </TabsList>
-          <TabsContent value="icons">
-            <Card className="rounded-3xl border-orange-300 bg-white/80 backdrop-blur">
-              <CardHeader>
-                <CardTitle>Paste your own item images</CardTitle>
-                <CardDescription>
-                  This avoids relying on third-party copied assets in the prototype. Choose an item, click paste, then paste the screenshot or copied image.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {activePasteTarget && (
-                  <div className="mb-4 rounded-2xl border border-emerald-800 bg-emerald-950/30 p-4 text-sm text-emerald-300">
-                    Ready to paste image for <strong>{activePasteTarget}</strong>. Use Ctrl/Cmd+V now.
-                  </div>
-                )}
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  {itemSeeds.map((item) => (
-                    <ItemVisual
-                      key={item.name}
-                      item={item}
-                      image={images[item.name]}
-                      onPasteClick={() => setActivePasteTarget(item.name)}
-                    />
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="notes">
-            <Card className="rounded-3xl border-orange-300 bg-white/80 backdrop-blur">
-              <CardHeader>
-                <CardTitle>Why this layout fits your use case</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm text-zinc-700">
-                <div className="rounded-2xl bg-white/70 p-4">Built for one player at a time, not heavy squad management.</div>
-                <div className="rounded-2xl bg-white/70 p-4">Package + spawn changes the card immediately, so the plan matches the run.</div>
-                <div className="rounded-2xl bg-white/70 p-4">Priority loot is visual first, because the goal is a 5–10 second glance.</div>
-                <div className="rounded-2xl bg-white/70 p-4">Item images can be user-supplied with copy/paste, which is the right direction for a private prototype.</div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
-  );
-}
-.
-
+</body>
+</html>
