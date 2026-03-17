@@ -1,432 +1,1376 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>ARC Raiders Raid Planner</title>
-<style>
-:root{
---bg1:#050a1a;
---bg2:#0b1d3a;
---card:#0f2447;
---card2:#132c56;
---text:#e9f1ff;
---muted:#a6b7e4;
---line:rgba(255,255,255,.08);
---arc-red:#ff4d4d;
---arc-orange:#ff8a00;
---arc-yellow:#ffd84d;
---arc-green:#47ffb1;
---arc-blue:#47cfff;
-}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ARC Raiders Meta Tool v2</title>
+  <style>
+    :root {
+      --bg-1: #071126;
+      --bg-2: #0c1b3b;
+      --card: rgba(14, 29, 63, 0.96);
+      --card-2: rgba(18, 38, 80, 0.9);
+      --text: #eef4ff;
+      --muted: #aebfe6;
+      --line: rgba(160, 190, 255, 0.18);
+      --input-bg: rgba(255,255,255,0.95);
+      --input-text: #0d1627;
+      --shadow: 0 20px 42px rgba(0,0,0,0.36);
+      --arc-red: #ff4b4b;
+      --arc-orange: #ff8a00;
+      --arc-yellow: #ffd84d;
+      --arc-green: #56f0b7;
+      --arc-blue: #47cfff;
+      --ok: #4adf95;
+      --warn: #ff8a00;
+      --bad: #ff5f5f;
+      --radius: 20px;
+    }
 
-*{box-sizing:border-box;font-family:Inter,system-ui,Arial}
-body{
-margin:0;
-background:linear-gradient(180deg,var(--bg1),var(--bg2));
-color:var(--text);
-}
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 18% 0%, rgba(71,207,255,0.12), transparent 28%),
+        radial-gradient(circle at 85% 12%, rgba(255,138,0,0.11), transparent 26%),
+        linear-gradient(180deg, var(--bg-1), var(--bg-2));
+      min-height: 100vh;
+    }
 
-.app{
-max-width:1400px;
-margin:auto;
-padding:28px;
-}
+    .app {
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 26px;
+    }
 
-h1{font-size:44px;margin:0 0 8px}
-.subtitle{color:var(--muted);margin-bottom:30px}
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin-bottom: 22px;
+    }
 
-.grid{
-display:grid;
-grid-template-columns:380px 1fr;
-gap:24px;
-}
+    h1 {
+      margin: 0;
+      font-size: clamp(36px, 4.8vw, 56px);
+      line-height: 1;
+      letter-spacing: -0.04em;
+      text-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    }
 
-.card{
-background:linear-gradient(180deg,var(--card),var(--card2));
-border:1px solid var(--line);
-border-radius:20px;
-padding:20px;
-}
+    .subtitle {
+      margin-top: 10px;
+      color: #c6d4f4;
+      max-width: 820px;
+      font-size: 16px;
+      line-height: 1.5;
+    }
 
-.card-title{
-font-size:20px;
-margin-bottom:16px;
-}
+    .hero-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
 
-label{
-display:block;
-font-size:12px;
-letter-spacing:.08em;
-text-transform:uppercase;
-margin-top:12px;
-margin-bottom:6px;
-color:#bcd0ff;
-}
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 11px 15px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .15s ease, opacity .15s ease;
+    }
+    button:hover { transform: translateY(-1px); }
 
-input,select{
-width:100%;
-padding:10px 12px;
-border-radius:10px;
-border:1px solid var(--line);
-background:#0b1d3a;
-color:white;
-}
+    .primary-btn {
+      background: linear-gradient(90deg, var(--arc-orange), var(--arc-yellow));
+      color: #121212;
+      box-shadow: var(--shadow);
+    }
 
-button{
-margin-top:10px;
-padding:10px 14px;
-border-radius:10px;
-border:none;
-background:linear-gradient(90deg,var(--arc-orange),var(--arc-yellow));
-font-weight:700;
-cursor:pointer;
-}
+    .secondary-btn {
+      background: rgba(255,255,255,0.92);
+      color: #16203b;
+    }
 
-.snapshot-grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:18px;
-}
+    .ghost-btn {
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
 
-.box{
-background:#0a1a36;
-padding:16px;
-border-radius:14px;
-border:1px solid var(--line);
-}
+    .layout {
+      display: grid;
+      grid-template-columns: 390px minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
 
-.box h3{margin-top:0;font-size:14px;color:#bcd0ff}
+    .main-stack {
+      display: grid;
+      gap: 20px;
+    }
 
-.pill{
-display:inline-block;
-margin:4px;
-padding:6px 10px;
-border-radius:20px;
-background:linear-gradient(90deg,var(--arc-red),var(--arc-orange));
-font-size:12px;
-font-weight:700;
-color:black;
-}
+    .card {
+      border-radius: 22px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, var(--card), var(--card-2));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
 
-.stash-grid{
-display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:10px;
-margin-top:10px;
-}
+    .card::before {
+      content: "";
+      display: block;
+      height: 4px;
+      background: linear-gradient(90deg, var(--arc-red), var(--arc-orange), var(--arc-yellow), var(--arc-green), var(--arc-blue));
+    }
 
-.stash-item{
-background:#0a1a36;
-padding:10px;
-border-radius:10px;
-border:1px solid var(--line);
-}
+    .card-inner { padding: 20px; }
 
-.workbench-grid{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:16px;
-}
+    .section-title {
+      margin: 0 0 16px;
+      font-size: 28px;
+      letter-spacing: -0.03em;
+    }
 
-.workbench-card{
-background:#0a1a36;
-padding:14px;
-border-radius:14px;
-border:1px solid var(--line);
-}
+    .stack { display: grid; gap: 14px; }
 
-.summary{
-white-space:pre-wrap;
-background:#07162f;
-padding:16px;
-border-radius:14px;
-border:1px solid var(--line);
-margin-top:16px;
-}
+    label {
+      display: block;
+      margin: 0 0 7px;
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: #dce6ff;
+    }
 
-@media(max-width:900px){
-.grid{grid-template-columns:1fr}
-.stash-grid{grid-template-columns:repeat(2,1fr)}
-.workbench-grid{grid-template-columns:1fr}
-}
-</style>
+    input, select {
+      width: 100%;
+      padding: 11px 13px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: var(--input-bg);
+      color: var(--input-text);
+      font-size: 16px;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: rgba(71,207,255,0.45);
+      box-shadow: 0 0 0 4px rgba(71,207,255,0.12);
+    }
+
+    .profile-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 8px;
+    }
+
+    .view-toggle {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 4px;
+    }
+
+    .toggle-btn {
+      background: rgba(255,255,255,0.12);
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .toggle-btn.active {
+      background: var(--arc-orange);
+      color: white;
+      border-color: transparent;
+    }
+
+    .preset-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .preset {
+      border-radius: 16px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.06);
+      text-align: left;
+      color: var(--text);
+    }
+
+    .preset.active {
+      background: rgba(255,138,0,0.16);
+      border-color: rgba(255,138,0,0.4);
+    }
+
+    .preset strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 15px;
+    }
+
+    .preset span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .status-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 13px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.92);
+      color: #17342a;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .status-chip .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--ok);
+    }
+
+    .snapshot-grid {
+      display: grid;
+      grid-template-columns: 1.04fr 0.96fr;
+      gap: 14px;
+    }
+
+    .mini-card {
+      border: 1px solid rgba(164,190,255,0.18);
+      border-radius: 18px;
+      padding: 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+    }
+
+    .mini-card h3 {
+      margin: 0 0 10px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .09em;
+      color: #dce6ff;
+    }
+
+    .route-box {
+      min-height: 296px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .route-visual {
+      border-radius: 14px;
+      border: 1px dashed rgba(255,216,77,0.42);
+      background: rgba(255,255,255,0.04);
+      padding: 14px;
+      margin-top: 14px;
+    }
+
+    .route-step {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+      font-weight: 800;
+    }
+
+    .route-step:last-child { margin-bottom: 0; }
+
+    .route-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--arc-orange);
+      color: white;
+      font-size: 13px;
+      flex: 0 0 auto;
+    }
+
+    .priority-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .loot-item {
+      border-radius: 18px;
+      border: 1px solid rgba(164,190,255,0.18);
+      background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.06));
+      padding: 14px;
+      text-align: center;
+      min-height: 156px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 8px;
+      transition: transform .15s ease, border-color .15s ease;
+    }
+
+    .loot-item:hover {
+      transform: translateY(-2px);
+      border-color: rgba(71,207,255,0.45);
+    }
+
+    .loot-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 20px;
+      margin: 0 auto;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background: linear-gradient(135deg, var(--arc-blue), var(--arc-green));
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow: 0 10px 22px rgba(0,0,0,0.32);
+      font-size: 28px;
+    }
+
+    .loot-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .loot-item strong { font-size: 14px; line-height: 1.2; }
+    .loot-item small { color: var(--muted); font-size: 11px; line-height: 1.35; }
+
+    .pill-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      color: #121212;
+      background: linear-gradient(90deg, var(--arc-red), var(--arc-orange), var(--arc-yellow));
+      box-shadow: 0 6px 14px rgba(0,0,0,0.18);
+    }
+
+    .summary-box {
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.05));
+      border: 1px solid rgba(164,190,255,0.18);
+      padding: 16px;
+      white-space: pre-wrap;
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text);
+    }
+
+    .footer-note {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .stash-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .workbench-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .workbench-card {
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(164,190,255,0.18);
+      background: linear-gradient(180deg, rgba(4,10,24,0.95), rgba(10,18,40,0.95));
+      box-shadow: 0 14px 28px rgba(0,0,0,0.28);
+    }
+
+    .workbench-top {
+      min-height: 116px;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      background: linear-gradient(135deg, rgba(71,207,255,0.18), rgba(255,138,0,0.12));
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .workbench-name {
+      font-size: 21px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+    }
+
+    .workbench-level {
+      font-size: 12px;
+      color: #d8e3ff;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .workbench-icon { font-size: 34px; }
+
+    .workbench-body {
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .workbench-focus {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .need-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .need-pill {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.10);
+      color: white;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .advisor-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .advisor-card {
+      border-radius: 18px;
+      border: 1px solid rgba(164,190,255,0.18);
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.05));
+      padding: 16px;
+    }
+
+    .advisor-card h3 {
+      margin: 0 0 10px;
+      font-size: 12px;
+      color: #dfe8ff;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .kv {
+      display: grid;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .kv-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding-bottom: 6px;
+    }
+
+    .kv-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .badge-ok { color: var(--ok); font-weight: 800; }
+    .badge-warn { color: var(--warn); font-weight: 800; }
+    .badge-bad { color: var(--bad); font-weight: 800; }
+
+    .image-library-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .image-card {
+      border-radius: 18px;
+      border: 1px solid rgba(164,190,255,0.18);
+      padding: 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.05));
+    }
+
+    .mini-preview {
+      width: 78px;
+      height: 78px;
+      margin: 0 auto 12px;
+      border-radius: 22px;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--arc-blue), var(--arc-green));
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow: 0 10px 22px rgba(0,0,0,0.28);
+      font-size: 28px;
+    }
+
+    .mini-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .image-card input[type=file] {
+      width: 100%;
+      font-size: 12px;
+      padding: 8px;
+      border-radius: 10px;
+    }
+
+    .tiny-btn {
+      margin-top: 8px;
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 10px;
+    }
+
+    body.glance .editor-card,
+    body.glance .stash-card,
+    body.glance .workbench-card-panel,
+    body.glance .advisor-panel,
+    body.glance .images-card,
+    body.glance .summary-card { display: none; }
+    body.glance .layout { grid-template-columns: 1fr; }
+    body.glance .snapshot-grid { grid-template-columns: 1fr; }
+
+    @media (max-width: 1100px) {
+      .layout, .snapshot-grid { grid-template-columns: 1fr; }
+      .priority-grid, .advisor-grid, .workbench-grid, .image-library-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .stash-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 760px) {
+      .app { padding: 14px; }
+      .profile-row, .preset-grid { grid-template-columns: 1fr; }
+      .priority-grid, .advisor-grid, .workbench-grid, .image-library-grid, .stash-grid { grid-template-columns: 1fr; }
+      .section-title { font-size: 24px; }
+      h1 { font-size: 34px; }
+      .card-inner { padding: 16px; }
+    }
+  </style>
 </head>
-
 <body>
-
-<div class="app">
-<h1>ARC Raiders Raid Planner</h1>
-<div class="subtitle">Second screen raid helper. Plan loot, stash and upgrades before dropping into Speranza.</div>
-
-<div class="grid">
-
-<div class="card">
-<div class="card-title">Loadout Setup</div>
-
-<label>Profile</label>
-<select id="profile"></select>
-<button id="newProfile">New Profile</button>
-
-<label>Player</label>
-<input id="player" />
-
-<label>Weapon Goal</label>
-<select id="weapon"></select>
-
-<label>Raid Package</label>
-<select id="package"></select>
-
-<label>Spawn</label>
-<select id="spawn"></select>
-
-<label>Progress Stage</label>
-<select id="stage">
-<option>Season Start</option>
-<option>Mid Progress</option>
-<option>Endgame</option>
-</select>
-
-</div>
-
-<div>
-
-<div class="card">
-<div class="card-title">Raid Snapshot</div>
-
-<div class="snapshot-grid">
-
-<div class="box">
-<h3>Route</h3>
-<div id="route"></div>
-</div>
-
-<div class="box">
-<h3>Priority Loot</h3>
-<div id="loot"></div>
-</div>
-
-<div class="box">
-<h3>Safe Pocket</h3>
-<div id="safe"></div>
-</div>
-
-<div class="box">
-<h3>Consumables</h3>
-<div id="cons"></div>
-</div>
-
-</div>
-
-<div class="box" style="margin-top:16px">
-<h3>Weapon Goal</h3>
-<div id="weaponGoal"></div>
-</div>
-
-</div>
-
-<div class="card" style="margin-top:20px">
-<div class="card-title">Stash Tracker</div>
-<div class="stash-grid" id="stash"></div>
-</div>
-
-<div class="card" style="margin-top:20px">
-<div class="card-title">Workbench Planner</div>
-<div class="workbench-grid" id="workbench"></div>
-</div>
-
-<div class="card" style="margin-top:20px">
-<div class="card-title">Raid Plan</div>
-<div class="summary" id="summary"></div>
-<button id="copy">Copy Raid Plan</button>
-</div>
-
-</div>
-
-</div>
-</div>
-
-<script>
-
-const weapons=[
-"Stitcher IV","Il Toro IV","Equalizer IV","Arpeggio IV","Anvil IV","Mistral IV","Aphelion Rifle"
-];
-
-const packages={
-"PvP Push":{
-loot:["Medium Gun Parts","Battery","Magnets"],
-safe:["Stim","Bandage"],
-cons:["Bandage","Stim"]
-},
-"Rebuild":{
-loot:["Metal Parts","Fabric","Plastic Parts"],
-safe:["Battery"],
-cons:["Bandage"]
-}
-};
-
-const spawns={
-"Spaceport":["Spawn","Electronics loop","Containers","Extract"],
-"Dam":["Spawn","Turbines","Storage","Extract"]
-};
-
-const stashItems=[
-"Battery","Magnets","Wires","Metal Parts","Fabric","Plastic Parts","Rubber Parts","ARC Alloy","Chemicals"
-];
-
-const workbenches=[
-"Gunsmith","Gear Bench","Medical Lab","Utility Station","Explosives Station","Refiner"
-];
-
-let profiles={
-"Jartukainen":{
-player:"Jartukainen",
-weapon:"Stitcher IV",
-package:"PvP Push",
-spawn:"Spaceport",
-stash:{}
-}
-};
-
-stashItems.forEach(i=>profiles.Jartukainen.stash[i]=0);
-
-const profileSel=document.getElementById("profile");
-const playerInput=document.getElementById("player");
-const weaponSel=document.getElementById("weapon");
-const packageSel=document.getElementById("package");
-const spawnSel=document.getElementById("spawn");
-
-const routeBox=document.getElementById("route");
-const lootBox=document.getElementById("loot");
-const safeBox=document.getElementById("safe");
-const consBox=document.getElementById("cons");
-const weaponGoal=document.getElementById("weaponGoal");
-
-const stashGrid=document.getElementById("stash");
-const workbenchGrid=document.getElementById("workbench");
-const summary=document.getElementById("summary");
-
-function init(){
-
-weapons.forEach(w=>{
-let o=document.createElement("option");
-o.textContent=w;
-weaponSel.appendChild(o);
-});
-
-Object.keys(packages).forEach(p=>{
-let o=document.createElement("option");
-o.textContent=p;
-packageSel.appendChild(o);
-});
-
-Object.keys(spawns).forEach(s=>{
-let o=document.createElement("option");
-o.textContent=s;
-spawnSel.appendChild(o);
-});
-
-Object.keys(profiles).forEach(p=>{
-let o=document.createElement("option");
-o.textContent=p;
-profileSel.appendChild(o);
-});
-
-renderStash();
-renderWorkbench();
-loadProfile(profileSel.value);
-update();
-}
-
-function renderStash(){
-
-stashItems.forEach(item=>{
-
-let div=document.createElement("div");
-div.className="stash-item";
-
-let label=document.createElement("div");
-label.textContent=item;
-
-let input=document.createElement("input");
-input.type="number";
-input.value=0;
-
-input.oninput=()=>{
-profiles[profileSel.value].stash[item]=Number(input.value);
-update();
-}
-
-
-div.appendChild(label);
-div.appendChild(input);
-stashGrid.appendChild(div);
-
-});
-
-}
-
-function renderWorkbench(){
-
-workbenches.forEach(w=>{
-
-let div=document.createElement("div");
-div.className="workbench-card";
-div.innerHTML=`<strong>${w}</strong><div style="margin-top:6px;color:#9bb0e3">upgrade planner</div>`;
-
-workbenchGrid.appendChild(div);
-
-});
-
-}
-
-function loadProfile(name){
-let p=profiles[name];
-playerInput.value=p.player;
-weaponSel.value=p.weapon;
-packageSel.value=p.package;
-spawnSel.value=p.spawn;
-}
-
-function update(){
-
-let p=profiles[profileSel.value];
-
-let pkg=packages[p.package];
-let route=spawns[p.spawn];
-
-routeBox.innerHTML="";
-route.forEach(r=>routeBox.innerHTML+=`<div>${r}</div>`);
-
-lootBox.innerHTML="";
-pkg.loot.forEach(i=>lootBox.innerHTML+=`<span class='pill'>${i}</span>`);
-
-safeBox.innerHTML="";
-pkg.safe.forEach(i=>safeBox.innerHTML+=`<span class='pill'>${i}</span>`);
-
-consBox.innerHTML="";
-pkg.cons.forEach(i=>consBox.innerHTML+=`<span class='pill'>${i}</span>`);
-
-weaponGoal.textContent=p.weapon;
-
-summary.textContent=`ARC RAID PLAN
-Player: ${p.player}
-Package: ${p.package}
-Spawn: ${p.spawn}
-Weapon Goal: ${p.weapon}
-Route: ${route.join(" -> ")}`;
-
-}
-
-playerInput.oninput=()=>{profiles[profileSel.value].player=playerInput.value;update();}
-weaponSel.onchange=()=>{profiles[profileSel.value].weapon=weaponSel.value;update();}
-packageSel.onchange=()=>{profiles[profileSel.value].package=packageSel.value;update();}
-spawnSel.onchange=()=>{profiles[profileSel.value].spawn=spawnSel.value;update();}
-profileSel.onchange=()=>loadProfile(profileSel.value);
-
-init();
-
-</script>
-
+  <div class="app">
+    <div class="hero">
+      <div>
+        <h1>ARC Raiders Meta Tool v2</h1>
+        <div class="subtitle">Clean build. Stable core first. Profiles, stash, smart raid snapshot, smart loot advisor, workbench focus, and real CDN item icons.</div>
+      </div>
+      <div class="hero-actions">
+        <button class="primary-btn" id="copyBtn">Copy Raid Plan</button>
+        <button class="secondary-btn" id="modeBtn">Glance Mode</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="card editor-card">
+        <div class="card-inner stack">
+          <div>
+            <div class="section-title">Loadout Setup</div>
+            <div class="view-toggle">
+              <button class="toggle-btn active" data-view="full">Full View</button>
+              <button class="toggle-btn" data-view="glance">Glance View</button>
+            </div>
+          </div>
+
+          <div>
+            <label for="profileSelect">Profile</label>
+            <div class="profile-row">
+              <select id="profileSelect"></select>
+              <button type="button" class="secondary-btn" id="newProfileBtn">New</button>
+              <button type="button" class="secondary-btn" id="deleteProfileBtn">Delete</button>
+            </div>
+          </div>
+
+          <div>
+            <label for="playerInput">Player</label>
+            <input id="playerInput" type="text" />
+          </div>
+
+          <div>
+            <label for="weaponSelect">Weapon Goal</label>
+            <select id="weaponSelect"></select>
+            <input id="weaponCustomInput" type="text" placeholder="Optional custom weapon goal" style="margin-top:8px;" />
+          </div>
+
+          <div>
+            <label>Quick Presets</label>
+            <div class="preset-grid" id="presetGrid"></div>
+          </div>
+
+          <div>
+            <label for="packageSelect">Raid Package</label>
+            <select id="packageSelect"></select>
+          </div>
+
+          <div>
+            <label for="spawnSelect">Spawn</label>
+            <select id="spawnSelect"></select>
+          </div>
+
+          <div>
+            <label for="stageSelect">Progress Stage</label>
+            <select id="stageSelect">
+              <option value="Season Start">Season Start</option>
+              <option value="Mid Progress">Mid Progress</option>
+              <option value="Endgame">Endgame</option>
+              <option value="Recovery">Recovery</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="main-stack">
+        <div class="card snapshot-card">
+          <div class="card-inner">
+            <div class="status-row">
+              <div>
+                <div class="section-title" style="margin-bottom:6px;">Raid Snapshot</div>
+                <div id="packageSummary" class="subtitle" style="margin:0;max-width:none;"></div>
+              </div>
+              <div class="status-chip"><span class="dot"></span><span id="statusText">Ready</span></div>
+            </div>
+
+            <div class="snapshot-grid">
+              <div class="mini-card route-box">
+                <div>
+                  <h3>Route</h3>
+                  <div id="spawnName" style="font-size:28px;font-weight:900;letter-spacing:-.03em;"></div>
+                  <div id="routeSummary" style="margin-top:8px;color:var(--muted);line-height:1.45;"></div>
+                </div>
+                <div class="route-visual" id="routeVisual"></div>
+              </div>
+
+              <div class="mini-card">
+                <h3>Priority Loot</h3>
+                <div class="priority-grid" id="priorityGrid"></div>
+              </div>
+            </div>
+
+            <div class="snapshot-grid" style="margin-top:14px;">
+              <div class="mini-card"><h3>Safe Pocket</h3><div class="pill-row" id="safePocketRow"></div></div>
+              <div class="mini-card"><h3>Consumables</h3><div class="pill-row" id="consumablesRow"></div></div>
+            </div>
+
+            <div style="margin-top:14px;"><div class="mini-card"><h3>Weapon Goal</h3><div id="weaponGoalText" style="font-size:24px;font-weight:900;letter-spacing:-.02em;"></div></div></div>
+          </div>
+        </div>
+
+        <div class="card advisor-panel">
+          <div class="card-inner">
+            <div class="section-title" style="font-size:22px;">Smart Loot Advisor</div>
+            <div class="advisor-grid">
+              <div class="advisor-card">
+                <h3>Low Stash Items</h3>
+                <div class="kv" id="lowStashList"></div>
+              </div>
+              <div class="advisor-card">
+                <h3>Workbench Targets</h3>
+                <div class="kv" id="workbenchNeedList"></div>
+              </div>
+              <div class="advisor-card">
+                <h3>Session Suggestion</h3>
+                <div class="kv" id="sessionSuggestion"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card profile-card">
+          <div class="card-inner">
+            <div class="section-title" style="font-size:22px;">Profile & Workbenches</div>
+            <div class="snapshot-grid">
+              <div class="mini-card">
+                <h3>Player Profile</h3>
+                <div id="profileMeta" style="color:var(--muted);line-height:1.5;font-size:14px;margin-bottom:12px;"></div>
+                <label style="margin-bottom:10px;">Stash Highlights</label>
+                <div id="stashHighlights" class="pill-row"></div>
+              </div>
+              <div class="mini-card">
+                <h3>Workbench Focus</h3>
+                <div id="workbenchGrid" class="workbench-grid"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card stash-card">
+          <div class="card-inner">
+            <div class="section-title" style="font-size:22px;">Stash Tracker</div>
+            <div id="stashGrid" class="stash-grid"></div>
+          </div>
+        </div>
+
+        <div class="card images-card">
+          <div class="card-inner">
+            <div class="section-title" style="font-size:22px;">Item Image Library</div>
+            <div class="footer-note" style="margin-top:0;margin-bottom:14px;">MetaForge CDN icons are used by default. You can override any item with your own image, saved locally in your browser.</div>
+            <div id="imageLibraryGrid" class="image-library-grid"></div>
+          </div>
+        </div>
+
+        <div class="card summary-card">
+          <div class="card-inner">
+            <div class="section-title" style="font-size:22px;">Raid Summary</div>
+            <div class="summary-box" id="summaryBox"></div>
+            <div class="footer-note">This build is organized to stay stable. New logic is isolated instead of stacked on top of old patches.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const ICON_BASE = 'https://cdn.metaforge.app/arc-raiders/icons/';
+
+    const WEAPONS = [
+      'Stitcher IV', 'Il Toro IV', 'Equalizer IV', 'Arpeggio IV', 'Anvil IV', 'Mistral IV', 'Aphelion Rifle'
+    ];
+
+    const PACKAGES = {
+      'PvP Push': {
+        summary: 'Go in geared. Sustain first, then pressure.',
+        loot: ['Medium Gun Parts', 'Battery', 'Magnets', 'Shield Charger'],
+        safe: ['Stim', 'Bandage'],
+        cons: ['Bandage', 'Shield Charger', 'Stim']
+      },
+      'Rebuild': {
+        summary: 'Best after losing gear. Prioritize guaranteed value over PvP.',
+        loot: ['Metal Parts', 'Fabric', 'Plastic Parts', 'Battery'],
+        safe: ['Battery', 'Stim'],
+        cons: ['Bandage', 'Stim']
+      },
+      'Loot Run': {
+        summary: 'Low-risk refill run. Avoid fights and extract early.',
+        loot: ['Battery', 'Magnets', 'Wires', 'Canister'],
+        safe: ['Battery', 'Magnets'],
+        cons: ['Bandage']
+      },
+      'Trials': {
+        summary: 'Mobility and sustain before greed.',
+        loot: ['Stim', 'Bandage', 'Shield Charger', 'Battery'],
+        safe: ['Stim', 'Bandage'],
+        cons: ['Stim', 'Bandage', 'Shield Charger']
+      },
+      'Weapon Upgrade': {
+        summary: 'Farm upgrade parts and get out clean.',
+        loot: ['Heavy Gun Parts', 'Medium Gun Parts', 'Battery', 'Wires'],
+        safe: ['Battery', 'Magnets'],
+        cons: ['Bandage', 'Stim']
+      }
+    };
+
+    const SPAWNS = {
+      'Spaceport': {
+        routeSummary: 'Best electronics loop for quick component recovery.',
+        steps: ['Spawn in', 'Electronics loop', 'Containers', 'Extract'],
+        boosts: ['Magnets', 'Wires', 'Battery', 'Medium Gun Parts']
+      },
+      'Dam': {
+        routeSummary: 'Industrial path with strong oil and weapon-part value.',
+        steps: ['Spawn in', 'Turbines', 'Storage', 'Extract'],
+        boosts: ['Battery', 'Metal Parts', 'Heavy Gun Parts', 'Crude Oil']
+      },
+      'Blue Gate': {
+        routeSummary: 'Utility route with reliable support materials.',
+        steps: ['Spawn in', 'Utility rooms', 'Shield path', 'Extract'],
+        boosts: ['Magnets', 'Wires', 'Shield Charger', 'Light Gun Parts']
+      },
+      'Stella Montis': {
+        routeSummary: 'Medical route for sustain and safer exits.',
+        steps: ['Spawn in', 'Medical wing', 'Support loot', 'Extract'],
+        boosts: ['Bandage', 'Shield Charger', 'Stim', 'Fabric']
+      },
+      'Buried City': {
+        routeSummary: 'High risk route for brave farming and fast resets.',
+        steps: ['Spawn in', 'Rare loot line', 'Quick check', 'Extract fast'],
+        boosts: ['Heavy Gun Parts', 'Bandage', 'ARC Alloy', 'Crude Oil']
+      }
+    };
+
+    const ITEM_META = {
+      'Battery': { img: 'battery.png', icon: '🔋', hint: 'workshop + craft' },
+      'Magnets': { img: 'magnets.png', icon: '🧲', hint: 'electronics' },
+      'Wires': { img: 'wires.png', icon: '🧵', hint: 'utility + craft' },
+      'Crude Oil': { img: 'crude-oil.png', icon: '🛢️', hint: 'fuel + craft' },
+      'Canister': { img: 'canister.png', icon: '🧴', hint: 'sustain / fuel' },
+      'Bandage': { img: 'bandage.png', icon: '🩹', hint: 'healing' },
+      'Shield Charger': { img: 'shield-charger.png', icon: '🛡️', hint: 'shield sustain' },
+      'Stim': { img: 'stim.png', icon: '💉', hint: 'stamina / movement' },
+      'Medium Gun Parts': { img: 'medium-gun-parts.png', icon: '🔧', hint: 'weapon upgrade' },
+      'Heavy Gun Parts': { img: 'heavy-gun-parts.png', icon: '⚙️', hint: 'high tier weapon' },
+      'Light Gun Parts': { img: 'light-gun-parts.png', icon: '🎯', hint: 'backup weapon' },
+      'Plastic Parts': { img: 'plastic-parts.png', icon: '🧰', hint: 'gear bench' },
+      'Fabric': { img: 'fabric.png', icon: '🧻', hint: 'medical / bench' },
+      'Metal Parts': { img: 'metal-parts.png', icon: '🔩', hint: 'gunsmith / refiner' },
+      'Rubber Parts': { img: 'rubber-parts.png', icon: '🛞', hint: 'gunsmith' },
+      'ARC Alloy': { img: 'arc-alloy.png', icon: '🪙', hint: 'high value material' },
+      'Chemicals': { img: 'chemicals.png', icon: '🧪', hint: 'medical / explosives' },
+      'ARC Powercell': { img: 'arc-powercell.png', icon: '🔌', hint: 'refiner / premium mats' },
+      'Aphelion Rifle': { img: 'aphelion-rifle.png', icon: '⚡', hint: 'legendary rifle' },
+      'Arpeggio IV': { img: 'arpeggio-4.png', icon: '🎼', hint: 'burst rifle' },
+      'Anvil IV': { img: 'anvil-4.png', icon: '🔨', hint: 'heavy pistol' },
+      'Il Toro IV': { img: 'il-toro-4.png', icon: '🐂', hint: 'power rifle' },
+      'Stitcher IV': { img: 'stitcher-4.png', icon: '✂️', hint: 'trusted all-rounder' },
+      'Equalizer IV': { img: 'equalizer-4.png', icon: '🎚️', hint: 'smg option' },
+      'Mistral IV': { img: 'mistral-4.png', icon: '🌪️', hint: 'mobile weapon' }
+    };
+
+    const STASH_ITEMS = [
+      'Battery', 'Magnets', 'Wires', 'Metal Parts', 'Fabric', 'Plastic Parts', 'Rubber Parts',
+      'ARC Alloy', 'Chemicals', 'Stim', 'Bandage', 'Shield Charger', 'Medium Gun Parts',
+      'Heavy Gun Parts', 'Light Gun Parts', 'Canister', 'Crude Oil', 'ARC Powercell'
+    ];
+
+    const WORKBENCH_FOCUS = {
+      'Season Start': [
+        { name: 'Scrappy', level: '1/6', icon: '🐔', focus: 'Start point for early upgrades', need: ['Battery', 'Wires'] },
+        { name: 'Gunsmith', level: '1/3', icon: '🔫', focus: 'Weapons and gun crafting', need: ['Metal Parts', 'Rubber Parts'] },
+        { name: 'Gear Bench', level: '1/3', icon: '🧰', focus: 'Armor and support gear', need: ['Plastic Parts', 'Fabric'] }
+      ],
+      'Mid Progress': [
+        { name: 'Medical Lab', level: '2/3', icon: '🩺', focus: 'Reliable sustain and med prep', need: ['Fabric', 'ARC Alloy', 'Chemicals'] },
+        { name: 'Utility Station', level: '2/3', icon: '🔌', focus: 'Utility and support', need: ['Plastic Parts', 'Magnets'] },
+        { name: 'Refiner', level: '2/3', icon: '♻️', focus: 'More advanced material flow', need: ['Metal Parts', 'ARC Powercell', 'Battery'] }
+      ],
+      'Endgame': [
+        { name: 'PvP Craft Loop', level: 'Max', icon: '⚔️', focus: 'PvP sustain and raid prep', need: ['Shield Charger', 'Bandage', 'Stim'] },
+        { name: 'Weapon Upgrades', level: 'Max', icon: '🔧', focus: 'Top-end weapons and upgrades', need: ['Battery', 'Wires', 'Heavy Gun Parts'] },
+        { name: 'ARC Materials', level: 'Max', icon: '🪙', focus: 'Premium material maintenance', need: ['ARC Alloy', 'ARC Powercell'] }
+      ],
+      'Recovery': [
+        { name: 'Cheap Rebuild', level: 'Recovery', icon: '🛠️', focus: 'Get back on your feet', need: ['Battery', 'Magnets', 'Wires'] },
+        { name: 'Medical Refill', level: 'Recovery', icon: '🩹', focus: 'Restore sustain first', need: ['Bandage', 'Stim'] },
+        { name: 'Weapon Restart', level: 'Recovery', icon: '🎯', focus: 'Rebuild serviceable weapons', need: ['Light Gun Parts', 'Medium Gun Parts'] }
+      ]
+    };
+
+    const DEFAULT_PROFILES = {
+      'Jartukainen': {
+        player: 'Jartukainen',
+        weapon: 'Stitcher IV',
+        weaponCustom: '',
+        package: 'Rebuild',
+        spawn: 'Spaceport',
+        stage: 'Season Start',
+        stash: {
+          'Battery': 8, 'Magnets': 5, 'Wires': 9, 'Metal Parts': 4, 'Fabric': 5,
+          'Plastic Parts': 6, 'Rubber Parts': 2, 'ARC Alloy': 3, 'Chemicals': 2,
+          'Stim': 5, 'Bandage': 6, 'Shield Charger': 4, 'Medium Gun Parts': 5,
+          'Heavy Gun Parts': 2, 'Light Gun Parts': 3, 'Canister': 4, 'Crude Oil': 2,
+          'ARC Powercell': 1
+        }
+      }
+    };
+
+    const state = {
+      profiles: JSON.parse(localStorage.getItem('arcProfilesV2') || 'null') || JSON.parse(JSON.stringify(DEFAULT_PROFILES)),
+      itemImages: JSON.parse(localStorage.getItem('arcItemImagesV2') || '{}')
+    };
+
+    const els = {
+      profileSelect: document.getElementById('profileSelect'),
+      playerInput: document.getElementById('playerInput'),
+      weaponSelect: document.getElementById('weaponSelect'),
+      weaponCustomInput: document.getElementById('weaponCustomInput'),
+      packageSelect: document.getElementById('packageSelect'),
+      spawnSelect: document.getElementById('spawnSelect'),
+      stageSelect: document.getElementById('stageSelect'),
+      presetGrid: document.getElementById('presetGrid'),
+      packageSummary: document.getElementById('packageSummary'),
+      statusText: document.getElementById('statusText'),
+      spawnName: document.getElementById('spawnName'),
+      routeSummary: document.getElementById('routeSummary'),
+      routeVisual: document.getElementById('routeVisual'),
+      priorityGrid: document.getElementById('priorityGrid'),
+      safePocketRow: document.getElementById('safePocketRow'),
+      consumablesRow: document.getElementById('consumablesRow'),
+      weaponGoalText: document.getElementById('weaponGoalText'),
+      profileMeta: document.getElementById('profileMeta'),
+      stashHighlights: document.getElementById('stashHighlights'),
+      stashGrid: document.getElementById('stashGrid'),
+      workbenchGrid: document.getElementById('workbenchGrid'),
+      lowStashList: document.getElementById('lowStashList'),
+      workbenchNeedList: document.getElementById('workbenchNeedList'),
+      sessionSuggestion: document.getElementById('sessionSuggestion'),
+      imageLibraryGrid: document.getElementById('imageLibraryGrid'),
+      summaryBox: document.getElementById('summaryBox'),
+      copyBtn: document.getElementById('copyBtn'),
+      modeBtn: document.getElementById('modeBtn'),
+      newProfileBtn: document.getElementById('newProfileBtn'),
+      deleteProfileBtn: document.getElementById('deleteProfileBtn')
+    };
+
+    function saveProfiles() {
+      localStorage.setItem('arcProfilesV2', JSON.stringify(state.profiles));
+    }
+
+    function saveImages() {
+      localStorage.setItem('arcItemImagesV2', JSON.stringify(state.itemImages));
+    }
+
+    function toKebab(value) {
+      return String(value)
+        .toLowerCase()
+        .replace(/\biv\b/g, '4')
+        .replace(/\biii\b/g, '3')
+        .replace(/\bii\b/g, '2')
+        .replace(/\bi\b/g, '1')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    }
+
+    function getItemImage(item) {
+      const meta = ITEM_META[item] || {};
+      return ICON_BASE + (meta.img || (toKebab(item) + '.png'));
+    }
+
+    function iconMarkup(item) {
+      const meta = ITEM_META[item] || { icon: '📦' };
+      const src = state.itemImages[item] || getItemImage(item);
+      return `<img src="${src}" alt="${item}" loading="lazy" onerror="this.onerror=null;this.replaceWith(document.createTextNode('${meta.icon || '📦'}'))">`;
+    }
+
+    function currentProfileName() {
+      return els.profileSelect.value || Object.keys(state.profiles)[0];
+    }
+
+    function currentProfile() {
+      return state.profiles[currentProfileName()];
+    }
+
+    function fillSelect(select, values) {
+      select.innerHTML = '';
+      values.forEach(({ value, label }) => {
+        const opt = document.createElement('option');
+        opt.value = value;
+        opt.textContent = label;
+        select.appendChild(opt);
+      });
+    }
+
+    function ensureProfileShape(profile) {
+      if (!profile.stash) profile.stash = {};
+      STASH_ITEMS.forEach(item => {
+        if (typeof profile.stash[item] !== 'number') profile.stash[item] = 0;
+      });
+      if (!profile.package) profile.package = 'Rebuild';
+      if (!profile.spawn) profile.spawn = 'Spaceport';
+      if (!profile.stage) profile.stage = 'Season Start';
+      if (!profile.weapon) profile.weapon = 'Stitcher IV';
+      if (!profile.weaponCustom) profile.weaponCustom = '';
+      if (!profile.player) profile.player = 'Player';
+    }
+
+    function populateControls() {
+      fillSelect(els.profileSelect, Object.keys(state.profiles).map(name => ({ value: name, label: name })));
+      fillSelect(els.weaponSelect, WEAPONS.map(v => ({ value: v, label: v })));
+      fillSelect(els.packageSelect, Object.keys(PACKAGES).map(v => ({ value: v, label: v })));
+      fillSelect(els.spawnSelect, Object.keys(SPAWNS).map(v => ({ value: v, label: v })));
+      els.presetGrid.innerHTML = '';
+
+      Object.entries(PACKAGES).forEach(([key, config]) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'preset';
+        btn.dataset.preset = key;
+        btn.innerHTML = `<strong>${key}</strong><span>${config.summary}</span>`;
+        btn.addEventListener('click', () => {
+          els.packageSelect.value = key;
+          syncInputsToProfile();
+          renderAll();
+        });
+        els.presetGrid.appendChild(btn);
+      });
+    }
+
+    function loadProfileIntoInputs(name) {
+      const profile = state.profiles[name];
+      if (!profile) return;
+      ensureProfileShape(profile);
+      els.playerInput.value = profile.player;
+      els.weaponSelect.value = profile.weapon;
+      els.weaponCustomInput.value = profile.weaponCustom || '';
+      els.packageSelect.value = profile.package;
+      els.spawnSelect.value = profile.spawn;
+      els.stageSelect.value = profile.stage;
+    }
+
+    function syncInputsToProfile() {
+      const name = currentProfileName();
+      const profile = state.profiles[name];
+      if (!profile) return;
+      profile.player = els.playerInput.value || name;
+      profile.weapon = els.weaponSelect.value;
+      profile.weaponCustom = els.weaponCustomInput.value || '';
+      profile.package = els.packageSelect.value;
+      profile.spawn = els.spawnSelect.value;
+      profile.stage = els.stageSelect.value;
+      document.querySelectorAll('[data-stash-item]').forEach(input => {
+        profile.stash[input.dataset.stashItem] = Number(input.value || 0);
+      });
+      saveProfiles();
+    }
+
+    function setPresetButtonState(activeKey) {
+      document.querySelectorAll('.preset').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.preset === activeKey);
+      });
+    }
+
+    function renderRoute(steps) {
+      els.routeVisual.innerHTML = '';
+      steps.forEach((step, index) => {
+        const row = document.createElement('div');
+        row.className = 'route-step';
+        row.innerHTML = `<span class="route-num">${index + 1}</span><span>${step}</span>`;
+        els.routeVisual.appendChild(row);
+      });
+    }
+
+    function renderPills(target, values) {
+      target.innerHTML = '';
+      values.forEach(value => {
+        const pill = document.createElement('span');
+        pill.className = 'pill';
+        pill.textContent = value;
+        target.appendChild(pill);
+      });
+    }
+
+    function getPriorityLoot(profile) {
+      const pack = PACKAGES[profile.package];
+      const spawn = SPAWNS[profile.spawn];
+      return [...new Set([...(pack?.loot || []), ...(spawn?.boosts || [])])].slice(0, 6);
+    }
+
+    function renderPriorityLoot(items) {
+      els.priorityGrid.innerHTML = '';
+      items.forEach(item => {
+        const meta = ITEM_META[item] || { hint: 'loot' };
+        const card = document.createElement('div');
+        card.className = 'loot-item';
+        card.innerHTML = `
+          <div class="loot-icon">${iconMarkup(item)}</div>
+          <strong>${item}</strong>
+          <small>${meta.hint || ''}</small>
+        `;
+        els.priorityGrid.appendChild(card);
+      });
+    }
+
+    function renderWorkbenchFocus(profile) {
+      els.workbenchGrid.innerHTML = '';
+      const cards = WORKBENCH_FOCUS[profile.stage] || [];
+      cards.forEach(cardData => {
+        const card = document.createElement('div');
+        card.className = 'workbench-card';
+        card.innerHTML = `
+          <div class="workbench-top">
+            <div>
+              <div class="workbench-name">${cardData.name}</div>
+              <div class="workbench-level">Level ${cardData.level}</div>
+            </div>
+            <div class="workbench-icon">${cardData.icon}</div>
+          </div>
+          <div class="workbench-body">
+            <div class="workbench-focus">${cardData.focus}</div>
+            <div class="need-list">${cardData.need.map(need => `<span class="need-pill">${need}</span>`).join('')}</div>
+          </div>
+        `;
+        els.workbenchGrid.appendChild(card);
+      });
+    }
+
+    function renderStash(profile) {
+      els.stashGrid.innerHTML = '';
+      STASH_ITEMS.forEach(item => {
+        const meta = ITEM_META[item] || { hint: 'item' };
+        const amount = profile.stash[item] ?? 0;
+        const card = document.createElement('div');
+        card.className = 'loot-item';
+        card.style.minHeight = '182px';
+        card.innerHTML = `
+          <div class="loot-icon">${iconMarkup(item)}</div>
+          <strong>${item}</strong>
+          <small>${meta.hint || ''}</small>
+          <input data-stash-item="${item}" type="number" min="0" value="${amount}" style="margin-top:6px;text-align:center;font-weight:900;">
+        `;
+        els.stashGrid.appendChild(card);
+      });
+    }
+
+    function renderProfileMeta(profileName, profile) {
+      els.profileMeta.textContent = `Profile: ${profileName}. Stage: ${profile.stage}. One profile per player keeps stash, weapon goal, and raid priorities personal.`;
+      els.stashHighlights.innerHTML = '';
+      STASH_ITEMS
+        .map(item => [item, profile.stash[item] || 0])
+        .sort((a, b) => a[1] - b[1])
+        .slice(0, 4)
+        .forEach(([item, amount]) => {
+          const pill = document.createElement('span');
+          pill.className = 'pill';
+          pill.textContent = `${item}: ${amount}`;
+          els.stashHighlights.appendChild(pill);
+        });
+    }
+
+    function renderAdvisor(profile) {
+      const low = STASH_ITEMS
+        .map(item => ({ item, amount: profile.stash[item] || 0 }))
+        .sort((a, b) => a.amount - b.amount)
+        .slice(0, 4);
+
+      els.lowStashList.innerHTML = low.map(({ item, amount }) => `
+        <div class="kv-row"><span>${item}</span><span class="${amount === 0 ? 'badge-bad' : amount < 4 ? 'badge-warn' : 'badge-ok'}">${amount}</span></div>
+      `).join('');
+
+      const workbenchNeeds = (WORKBENCH_FOCUS[profile.stage] || [])
+        .flatMap(card => card.need)
+        .reduce((acc, item) => {
+          acc[item] = (acc[item] || 0) + 1;
+          return acc;
+        }, {});
+
+      const workbenchList = Object.keys(workbenchNeeds)
+        .slice(0, 4)
+        .map(item => {
+          const amount = profile.stash[item] || 0;
+          const cls = amount === 0 ? 'badge-bad' : amount < 4 ? 'badge-warn' : 'badge-ok';
+          return `<div class="kv-row"><span>${item}</span><span class="${cls}">${amount}</span></div>`;
+        }).join('');
+      els.workbenchNeedList.innerHTML = workbenchList || `<div class="kv-row"><span>No workbench needs</span><span class="badge-ok">OK</span></div>`;
+
+      const priority = getPriorityLoot(profile).slice(0, 3);
+      const stageMsg = profile.stage === 'Recovery'
+        ? 'Avoid heavy PvP. Refill core materials first.'
+        : profile.stage === 'Endgame'
+        ? 'You can lean into PvP and high-value upgrades.'
+        : 'Keep building your benches and protect value.';
+
+      els.sessionSuggestion.innerHTML = `
+        <div class="kv-row"><span>Best raid focus</span><span class="badge-ok">${profile.package}</span></div>
+        <div class="kv-row"><span>Top targets</span><span>${priority.join(', ')}</span></div>
+        <div class="kv-row"><span>Advice</span><span>${stageMsg}</span></div>
+      `;
+    }
+
+    function renderImageLibrary() {
+      els.imageLibraryGrid.innerHTML = '';
+      STASH_ITEMS.forEach(item => {
+        const meta = ITEM_META[item] || { icon: '📦', hint: 'item' };
+        const src = state.itemImages[item] || getItemImage(item);
+        const card = document.createElement('div');
+        card.className = 'image-card';
+        card.innerHTML = `
+          <div class="mini-preview"><img src="${src}" alt="${item}" loading="lazy" onerror="this.onerror=null;this.replaceWith(document.createTextNode('${meta.icon || '📦'}'))"></div>
+          <div style="text-align:center;font-weight:900;margin-bottom:4px;font-size:13px;color:var(--text);">${item}</div>
+          <div style="text-align:center;color:var(--muted);font-size:11px;margin-bottom:10px;">${meta.hint || ''}</div>
+          <input type="file" accept="image/*" data-image-item="${item}">
+          <button type="button" class="ghost-btn tiny-btn" data-clear-image="${item}">Use default CDN image</button>
+        `;
+        els.imageLibraryGrid.appendChild(card);
+      });
+    }
+
+    function renderSummary(profileName, profile) {
+      const pack = PACKAGES[profile.package];
+      const spawn = SPAWNS[profile.spawn];
+      const weaponGoal = profile.weaponCustom.trim() || profile.weapon;
+      els.summaryBox.textContent = [
+        'ARC RAID PLAN',
+        `Player: ${profile.player}`,
+        `Profile: ${profileName}`,
+        `Package: ${profile.package}`,
+        `Spawn: ${profile.spawn}`,
+        `Stage: ${profile.stage}`,
+        `Priority Loot: ${getPriorityLoot(profile).join(', ')}`,
+        `Safe Pocket: ${(pack?.safe || []).join(', ')}`,
+        `Consumables: ${(pack?.cons || []).join(', ')}`,
+        `Weapon Goal: ${weaponGoal}`,
+        `Workbench Focus: ${(WORKBENCH_FOCUS[profile.stage] || []).map(x => x.name).join(', ')}`,
+        `Route: ${(spawn?.steps || []).join(' -> ')}`
+      ].join('\n');
+    }
+
+    function renderSnapshot(profile) {
+      const pack = PACKAGES[profile.package];
+      const spawn = SPAWNS[profile.spawn];
+      const weaponGoal = profile.weaponCustom.trim() || profile.weapon;
+
+      els.packageSummary.textContent = pack.summary;
+      els.statusText.textContent = profile.package.toUpperCase();
+      els.spawnName.textContent = profile.spawn;
+      els.routeSummary.textContent = spawn.routeSummary;
+      renderRoute(spawn.steps);
+      renderPriorityLoot(getPriorityLoot(profile));
+      renderPills(els.safePocketRow, pack.safe);
+      renderPills(els.consumablesRow, pack.cons);
+      els.weaponGoalText.textContent = weaponGoal;
+    }
+
+    function renderAll() {
+      syncInputsToProfile();
+      const profileName = currentProfileName();
+      const profile = currentProfile();
+      renderSnapshot(profile);
+      renderProfileMeta(profileName, profile);
+      renderWorkbenchFocus(profile);
+      renderStash(profile);
+      renderAdvisor(profile);
+      renderImageLibrary();
+      renderSummary(profileName, profile);
+      setPresetButtonState(profile.package);
+    }
+
+    function setViewMode(mode) {
+      document.body.classList.toggle('glance', mode === 'glance');
+      document.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.view === mode);
+      });
+      els.modeBtn.textContent = mode === 'glance' ? 'Full View' : 'Glance Mode';
+    }
+
+    function createProfile() {
+      const name = prompt('New profile name');
+      if (!name) return;
+      if (state.profiles[name]) {
+        alert('That profile already exists.');
+        return;
+      }
+      state.profiles[name] = JSON.parse(JSON.stringify(DEFAULT_PROFILES.Jartukainen));
+      state.profiles[name].player = name;
+      saveProfiles();
+      populateControls();
+      els.profileSelect.value = name;
+      loadProfileIntoInputs(name);
+      renderAll();
+    }
+
+    function deleteProfile() {
+      const name = currentProfileName();
+      if (Object.keys(state.profiles).length === 1) {
+        alert('Keep at least one profile.');
+        return;
+      }
+      if (!confirm(`Delete profile ${name}?`)) return;
+      delete state.profiles[name];
+      saveProfiles();
+      populateControls();
+      const next = Object.keys(state.profiles)[0];
+      els.profileSelect.value = next;
+      loadProfileIntoInputs(next);
+      renderAll();
+    }
+
+    function initEvents() {
+      els.newProfileBtn.addEventListener('click', createProfile);
+      els.deleteProfileBtn.addEventListener('click', deleteProfile);
+      els.copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(els.summaryBox.textContent);
+          els.copyBtn.textContent = 'Copied';
+          setTimeout(() => els.copyBtn.textContent = 'Copy Raid Plan', 1200);
+        } catch {
+          alert('Copy failed on this device.');
+        }
+      });
+      els.modeBtn.addEventListener('click', () => setViewMode(document.body.classList.contains('glance') ? 'full' : 'glance'));
+
+      [els.profileSelect, els.playerInput, els.weaponSelect, els.weaponCustomInput, els.packageSelect, els.spawnSelect, els.stageSelect].forEach(el => {
+        el.addEventListener('input', () => {
+          if (el === els.profileSelect) loadProfileIntoInputs(currentProfileName());
+          renderAll();
+        });
+        el.addEventListener('change', () => {
+          if (el === els.profileSelect) loadProfileIntoInputs(currentProfileName());
+          renderAll();
+        });
+      });
+
+      document.addEventListener('input', event => {
+        if (event.target.matches('[data-stash-item]')) {
+          syncInputsToProfile();
+          renderAdvisor(currentProfile());
+          renderSummary(currentProfileName(), currentProfile());
+          renderProfileMeta(currentProfileName(), currentProfile());
+        }
+      });
+
+      document.addEventListener('change', event => {
+        if (event.target.matches('[data-image-item]')) {
+          const file = event.target.files && event.target.files[0];
+          const item = event.target.dataset.imageItem;
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = () => {
+            state.itemImages[item] = reader.result;
+            saveImages();
+            renderAll();
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      document.addEventListener('click', event => {
+        if (event.target.matches('[data-clear-image]')) {
+          const item = event.target.dataset.clearImage;
+          delete state.itemImages[item];
+          saveImages();
+          renderAll();
+        }
+        if (event.target.matches('.toggle-btn')) {
+          setViewMode(event.target.dataset.view);
+        }
+      });
+    }
+
+    function init() {
+      Object.values(state.profiles).forEach(ensureProfileShape);
+      populateControls();
+      const first = Object.keys(state.profiles)[0];
+      els.profileSelect.value = first;
+      loadProfileIntoInputs(first);
+      initEvents();
+      setViewMode('full');
+      renderAll();
+    }
+
+    init();
+  </script>
 </body>
 </html>
