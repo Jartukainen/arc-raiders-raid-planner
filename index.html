@@ -1,312 +1,432 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ARC Raiders Raid Planner</title>
-  <style>
-    :root {
-      --arc-red:#ff4b4b;
-      --arc-orange:#ff8a00;
-      --arc-yellow:#ffd84d;
-      --arc-green:#56f0b7;
-      --arc-blue:#47cfff;
-      --bg:#09152e;
-      --bg2:#0f1d41;
-      --card:rgba(11,24,59,.94);
-      --card2:rgba(18,32,76,.9);
-      --text:#eef4ff;
-      --muted:#b8c7ea;
-      --line:rgba(118,148,229,.22);
-      --input-bg:rgba(255,255,255,.94);
-      --input-text:#101520;
-      --shadow:0 18px 40px rgba(0,0,0,.38);
-      --radius:18px;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      color:var(--text);
-      background:
-        radial-gradient(circle at 20% 0%, rgba(71,207,255,.12), transparent 35%),
-        radial-gradient(circle at 80% 15%, rgba(255,138,0,.12), transparent 32%),
-        linear-gradient(180deg,#071126,var(--bg) 40%,var(--bg2));
-      min-height:100vh;
-    }
-    .app{max-width:1240px;margin:0 auto;padding:20px}
-    .hero{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;flex-wrap:wrap;margin-bottom:18px}
-    h1{margin:0;font-size:clamp(36px,4.4vw,56px);line-height:1;letter-spacing:-.04em;text-shadow:0 10px 30px rgba(0,0,0,.28)}
-    .subtitle{margin-top:10px;color:#c8d6f5;max-width:760px;font-size:16px;line-height:1.5}
-    .hero-actions{display:flex;gap:10px;flex-wrap:wrap}
-    button{border:0;border-radius:12px;padding:11px 16px;font-weight:800;cursor:pointer;transition:transform .15s ease,opacity .15s ease}
-    button:hover{transform:translateY(-1px)}
-    .primary-btn{background:var(--arc-orange);color:#fff;box-shadow:var(--shadow)}
-    .secondary-btn{background:rgba(255,255,255,.9);color:#17203a}
-    .ghost-btn{background:rgba(255,255,255,.12);color:var(--text);border:1px solid var(--line)}
-    .layout{display:grid;grid-template-columns:390px minmax(0,1fr);gap:18px;align-items:start}
-    .card{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);overflow:hidden;backdrop-filter:blur(8px)}
-    .card::before{content:"";display:block;height:4px;background:linear-gradient(90deg,var(--arc-red),var(--arc-orange),var(--arc-yellow),var(--arc-green),var(--arc-blue))}
-    .card-inner{padding:20px}
-    .section-title{margin:0 0 16px;font-size:30px;letter-spacing:-.03em;color:var(--text)}
-    .stack{display:grid;gap:14px}
-    label{display:block;margin:0 0 8px;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#dfe8ff}
-    input,select{width:100%;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:var(--input-bg);color:var(--input-text);padding:12px 14px;font-size:16px;outline:none}
-    input:focus,select:focus{box-shadow:0 0 0 4px rgba(71,207,255,.15);border-color:rgba(71,207,255,.4)}
-    .profile-row{display:grid;grid-template-columns:1fr auto auto;gap:8px}
-    .preset-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-    .preset{border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--text);border-radius:14px;padding:12px;text-align:left}
-    .preset.active{background:rgba(255,138,0,.16);border-color:rgba(255,138,0,.45)}
-    .preset strong{display:block;margin-bottom:4px;font-size:15px}
-    .preset span{display:block;color:var(--muted);font-size:12px;line-height:1.35}
-    .view-toggle{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
-    .toggle-btn{background:rgba(255,255,255,.16);color:var(--text);border:1px solid var(--line)}
-    .toggle-btn.active{background:var(--arc-orange);color:#fff;border-color:transparent}
-    .status-row{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;margin-bottom:14px}
-    .status-chip{display:inline-flex;align-items:center;gap:8px;padding:9px 13px;border-radius:999px;background:rgba(255,255,255,.9);color:#17302a;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.05em}
-    .status-chip .dot{width:8px;height:8px;border-radius:50%;background:var(--arc-green)}
-    .snapshot-grid{display:grid;grid-template-columns:1.02fr .98fr;gap:14px}
-    .mini-card{border:1px solid rgba(166,191,255,.18);border-radius:18px;padding:16px;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.05))}
-    .mini-card h3{margin:0 0 10px;font-size:12px;color:#dfe8ff;text-transform:uppercase;letter-spacing:.08em}
-    .route-box{min-height:292px;display:flex;flex-direction:column;justify-content:space-between}
-    .route-visual{border-radius:14px;border:1px dashed rgba(255,216,77,.4);background:rgba(255,255,255,.05);padding:14px;margin-top:12px}
-    .route-step{display:flex;gap:10px;align-items:center;margin-bottom:12px;font-weight:800;color:var(--text)}
-    .route-step:last-child{margin-bottom:0}
-    .route-num{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--arc-orange);color:#fff;font-size:13px;flex:0 0 auto}
-    .priority-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-    .loot-item{border:1px solid rgba(166,191,255,.18);background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.06));border-radius:18px;padding:14px;text-align:center;min-height:152px;display:flex;flex-direction:column;justify-content:center;gap:8px;transition:transform .15s ease,border-color .15s ease,background .15s ease}.loot-item:hover{transform:translateY(-2px);border-color:rgba(71,207,255,.45)}
-    .loot-icon{width:64px;height:64px;border-radius:20px;margin:0 auto;display:grid;place-items:center;overflow:hidden;background:linear-gradient(135deg,var(--arc-blue),var(--arc-green));border:1px solid rgba(255,255,255,.18);font-size:26px;box-shadow:0 10px 22px rgba(0,0,0,.32)}
-    .loot-icon img{width:100%;height:100%;object-fit:cover;display:block}
-    .loot-item strong{font-size:14px;line-height:1.2;color:var(--text)}
-    .loot-item small{color:var(--muted);font-size:11px;line-height:1.35}
-    .pill-row{display:flex;flex-wrap:wrap;gap:8px}
-    .pill{background:linear-gradient(90deg,var(--arc-red),var(--arc-orange),var(--arc-yellow));color:#111;border-radius:999px;padding:8px 12px;font-size:12px;font-weight:900;box-shadow:0 6px 16px rgba(0,0,0,.18)}
-    .summary-box{border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.05));border:1px solid rgba(166,191,255,.18);padding:16px;white-space:pre-wrap;font-size:13px;line-height:1.6;color:var(--text)}
-    .footer-note{margin-top:12px;color:var(--muted);font-size:13px}
-    .workbench-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-    .workbench-card{border:1px solid rgba(166,191,255,.18);border-radius:18px;overflow:hidden;background:linear-gradient(180deg,rgba(4,10,24,.95),rgba(10,18,40,.95));box-shadow:0 14px 28px rgba(0,0,0,.32)}
-    .workbench-top{min-height:118px;padding:16px;display:flex;align-items:end;justify-content:space-between;background:linear-gradient(135deg,rgba(71,207,255,.18),rgba(255,138,0,.12));border-bottom:1px solid rgba(255,255,255,.08)}
-    .workbench-name{font-size:21px;font-weight:900;color:#fff;letter-spacing:-.03em}
-    .workbench-level{font-size:12px;color:#dbe5ff;font-weight:800;text-transform:uppercase}
-    .workbench-icon{font-size:34px;opacity:.95}
-    .workbench-body{padding:14px;display:grid;gap:10px}
-    .workbench-focus{color:var(--muted);font-size:12px;line-height:1.4}
-    .need-list{display:flex;flex-wrap:wrap;gap:8px}
-    .need-pill{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);color:#fff;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:800}
-    .image-library-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-    .image-card{border:1px solid rgba(166,191,255,.18);border-radius:18px;padding:14px;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.05))}
-    .mini-preview{width:78px;height:78px;margin:0 auto 12px;border-radius:22px;overflow:hidden;display:grid;place-items:center;background:linear-gradient(135deg,var(--arc-blue),var(--arc-green));border:1px solid rgba(255,255,255,.18);font-size:28px;box-shadow:0 10px 22px rgba(0,0,0,.28)}
-    .mini-preview img{width:100%;height:100%;object-fit:cover}
-    .image-card input[type=file]{width:100%;font-size:12px;padding:8px;border-radius:10px}
-    .tiny-btn{margin-top:8px;width:100%;padding:8px 10px;border-radius:10px}
-    body.glance .editor-card,body.glance .summary-card,body.glance .images-card,body.glance .profile-card,body.glance .stash-card{display:none}
-    body.glance .layout{grid-template-columns:1fr}
-    body.glance .snapshot-grid{grid-template-columns:1fr}
-    body.glance .priority-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-    @media (max-width:980px){.layout,.snapshot-grid{grid-template-columns:1fr}.priority-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.workbench-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.image-library-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media (max-width:640px){.app{padding:14px}.preset-grid,.profile-row{grid-template-columns:1fr}.priority-grid,.image-library-grid,.workbench-grid{grid-template-columns:1fr}.section-title{font-size:24px}h1{font-size:34px}.card-inner{padding:16px}.loot-item{min-height:136px}.loot-icon{width:58px;height:58px}}
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ARC Raiders Raid Planner</title>
+<style>
+:root{
+--bg1:#050a1a;
+--bg2:#0b1d3a;
+--card:#0f2447;
+--card2:#132c56;
+--text:#e9f1ff;
+--muted:#a6b7e4;
+--line:rgba(255,255,255,.08);
+--arc-red:#ff4d4d;
+--arc-orange:#ff8a00;
+--arc-yellow:#ffd84d;
+--arc-green:#47ffb1;
+--arc-blue:#47cfff;
+}
+
+*{box-sizing:border-box;font-family:Inter,system-ui,Arial}
+body{
+margin:0;
+background:linear-gradient(180deg,var(--bg1),var(--bg2));
+color:var(--text);
+}
+
+.app{
+max-width:1400px;
+margin:auto;
+padding:28px;
+}
+
+h1{font-size:44px;margin:0 0 8px}
+.subtitle{color:var(--muted);margin-bottom:30px}
+
+.grid{
+display:grid;
+grid-template-columns:380px 1fr;
+gap:24px;
+}
+
+.card{
+background:linear-gradient(180deg,var(--card),var(--card2));
+border:1px solid var(--line);
+border-radius:20px;
+padding:20px;
+}
+
+.card-title{
+font-size:20px;
+margin-bottom:16px;
+}
+
+label{
+display:block;
+font-size:12px;
+letter-spacing:.08em;
+text-transform:uppercase;
+margin-top:12px;
+margin-bottom:6px;
+color:#bcd0ff;
+}
+
+input,select{
+width:100%;
+padding:10px 12px;
+border-radius:10px;
+border:1px solid var(--line);
+background:#0b1d3a;
+color:white;
+}
+
+button{
+margin-top:10px;
+padding:10px 14px;
+border-radius:10px;
+border:none;
+background:linear-gradient(90deg,var(--arc-orange),var(--arc-yellow));
+font-weight:700;
+cursor:pointer;
+}
+
+.snapshot-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:18px;
+}
+
+.box{
+background:#0a1a36;
+padding:16px;
+border-radius:14px;
+border:1px solid var(--line);
+}
+
+.box h3{margin-top:0;font-size:14px;color:#bcd0ff}
+
+.pill{
+display:inline-block;
+margin:4px;
+padding:6px 10px;
+border-radius:20px;
+background:linear-gradient(90deg,var(--arc-red),var(--arc-orange));
+font-size:12px;
+font-weight:700;
+color:black;
+}
+
+.stash-grid{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:10px;
+margin-top:10px;
+}
+
+.stash-item{
+background:#0a1a36;
+padding:10px;
+border-radius:10px;
+border:1px solid var(--line);
+}
+
+.workbench-grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:16px;
+}
+
+.workbench-card{
+background:#0a1a36;
+padding:14px;
+border-radius:14px;
+border:1px solid var(--line);
+}
+
+.summary{
+white-space:pre-wrap;
+background:#07162f;
+padding:16px;
+border-radius:14px;
+border:1px solid var(--line);
+margin-top:16px;
+}
+
+@media(max-width:900px){
+.grid{grid-template-columns:1fr}
+.stash-grid{grid-template-columns:repeat(2,1fr)}
+.workbench-grid{grid-template-columns:1fr}
+}
+</style>
 </head>
+
 <body>
-  <div class="app">
-    <div class="hero">
-      <div>
-        <h1>ARC Raiders Raid Planner</h1>
-        <div class="subtitle">Fast second-screen helper for Xbox, phone, or laptop. Pick a package, choose a spawn, and get a clear 5–10 second loot plan.</div>
-      </div>
-      <div class="hero-actions">
-        <button class="primary-btn" id="copyBtn">Copy Raid Plan</button>
-        <button class="secondary-btn" id="modeBtn">Glance Mode</button>
-      </div>
-    </div>
 
-    <div class="layout">
-      <div class="card editor-card"><div class="card-inner stack">
-        <div>
-          <div class="section-title">Loadout Setup</div>
-          <div class="view-toggle">
-            <button class="toggle-btn active" data-view="full">Full View</button>
-            <button class="toggle-btn" data-view="glance">Glance View</button>
-          </div>
-        </div>
-        <div>
-          <label for="profileSelect">Profile</label>
-          <div class="profile-row">
-            <select id="profileSelect"></select>
-            <button type="button" class="secondary-btn" id="newProfileBtn">New</button>
-            <button type="button" class="secondary-btn" id="deleteProfileBtn">Delete</button>
-          </div>
-        </div>
-        <div><label for="player">Player</label><input id="player" type="text" value="Jartukainen"></div>
-        <div>
-          <label for="weaponPreset">Weapon Goal</label>
-          <select id="weaponPreset"></select>
-          <input id="weaponCustom" type="text" placeholder="Optional custom weapon goal" style="margin-top:8px;">
-        </div>
-        <div><label>Quick Presets</label><div class="preset-grid" id="presetGrid"></div></div>
-        <div><label for="package">Raid Package</label><select id="package"></select></div>
-        <div><label for="spawn">Spawn</label><select id="spawn"></select></div>
-        <div><label for="profileStage">Progress Stage</label><select id="profileStage"><option value="early">Season Start / Workbench Build</option><option value="mid">Mid Progression</option><option value="endgame">Endgame / PvP</option><option value="recovery">Recovery After Losses</option></select></div>
-      </div></div>
+<div class="app">
+<h1>ARC Raiders Raid Planner</h1>
+<div class="subtitle">Second screen raid helper. Plan loot, stash and upgrades before dropping into Speranza.</div>
 
-      <div class="card snapshot-card"><div class="card-inner">
-        <div class="status-row">
-          <div><div class="section-title" style="margin-bottom:6px;">Raid Snapshot</div><div id="packageSummary" class="subtitle" style="margin:0;max-width:none;"></div></div>
-          <div class="status-chip"><span class="dot"></span><span id="statusText">READY</span></div>
-        </div>
-        <div class="snapshot-grid">
-          <div class="mini-card route-box"><div><h3>Route</h3><div id="spawnName" style="font-size:28px;font-weight:900;letter-spacing:-.03em;"></div><div id="routeSummary" style="margin-top:8px;color:var(--muted);line-height:1.45;"></div></div><div class="route-visual" id="routeVisual"></div></div>
-          <div class="mini-card"><h3>Priority Loot</h3><div class="priority-grid" id="priorityGrid"></div></div>
-        </div>
-        <div class="snapshot-grid" style="margin-top:14px;"><div class="mini-card"><h3>Safe Pocket</h3><div class="pill-row" id="safePocketRow"></div></div><div class="mini-card"><h3>Consumables</h3><div class="pill-row" id="consumablesRow"></div></div></div>
-        <div style="margin-top:14px;"><div class="mini-card"><h3>Weapon Goal</h3><div id="weaponGoalText" style="font-size:24px;font-weight:900;letter-spacing:-.02em;"></div></div></div>
-      </div></div>
-    </div>
+<div class="grid">
 
-    <div class="card profile-card" style="margin-top:18px;"><div class="card-inner">
-      <div class="section-title" style="font-size:22px;">Profile & Workbenches</div>
-      <div class="snapshot-grid" style="grid-template-columns:1fr 1fr;">
-        <div class="mini-card"><h3>Player Profile</h3><div id="profileMeta" style="color:var(--muted);line-height:1.45;font-size:14px;margin-bottom:12px;"></div><label style="margin-bottom:10px;">Stash Highlights</label><div id="stashHighlights" class="pill-row"></div></div>
-        <div class="mini-card"><h3>Workbench Focus</h3><div id="workbenchGrid" class="workbench-grid"></div></div>
-      </div>
-    </div></div>
+<div class="card">
+<div class="card-title">Loadout Setup</div>
 
-    <div class="card" style="margin-top:18px;"><div class="card-inner">
-      <div class="section-title" style="font-size:22px;">Workbench Upgrade Panel</div>
-      <div class="snapshot-grid" style="grid-template-columns:320px 1fr;align-items:start;">
-        <div class="mini-card stack">
-          <div>
-            <label for="upgradeWorkbench">Workbench</label>
-            <select id="upgradeWorkbench">
-              <option value="Gunsmith">Gunsmith</option>
-              <option value="Gear Bench">Gear Bench</option>
-              <option value="Medical Lab">Medical Lab</option>
-              <option value="Utility Station">Utility Station</option>
-              <option value="Explosives Station">Explosives Station</option>
-              <option value="Refiner">Refiner</option>
-            </select>
-          </div>
-          <div>
-            <label for="upgradeCurrent">Current Level</label>
-            <select id="upgradeCurrent">
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-            </select>
-          </div>
-          <div>
-            <label for="upgradeTarget">Target Level</label>
-            <select id="upgradeTarget">
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-            </select>
-          </div>
-          <div id="upgradeSummary" class="summary-box" style="font-size:12px;"></div>
-        </div>
-        <div class="mini-card">
-          <h3>Required / Have / Missing</h3>
-          <div id="upgradeGrid" class="priority-grid"></div>
-        </div>
-      </div>
-    </div></div>
+<label>Profile</label>
+<select id="profile"></select>
+<button id="newProfile">New Profile</button>
 
-    <div class="card stash-card" style="margin-top:18px;"><div class="card-inner"><div class="section-title" style="font-size:22px;">Stash Tracker</div><div id="stashGrid" class="priority-grid" style="grid-template-columns:repeat(4,minmax(0,1fr));"></div></div></div>
-    <div class="card images-card" style="margin-top:18px;"><div class="card-inner"><div class="section-title" style="font-size:22px;">Item Image Library</div><div class="footer-note" style="margin-top:0;margin-bottom:14px;">The planner uses MetaForge CDN item icons by default. You can still override any item with your own uploaded image, saved locally in your browser.</div><div id="imageLibraryGrid" class="image-library-grid"></div></div></div>
-    <div class="card summary-card" style="margin-top:18px;"><div class="card-inner"><div class="section-title" style="font-size:22px;">Raid Summary</div><div class="summary-box" id="summaryBox"></div><div class="footer-note">Tip: keep this open on your phone or second monitor. Use Glance Mode when you want bigger cards and less clutter.</div></div></div>
-  </div>
+<label>Player</label>
+<input id="player" />
 
-  <script>
-    const iconBase='https://cdn.metaforge.app/arc-raiders/icons/';
-    const packageData={loot:{label:'Loot Run',short:'Low-risk refill run. Avoid fights and extract early.',status:'LOOT MODE',targets:['Battery','Magnets','Wires','Crude Oil','Canister'],safePocket:['Battery','Magnets'],consumables:['Bandage','Stim']},rebuild:{label:'Rebuild',short:'Best after losing gear. Prioritize guaranteed value over PvP.',status:'REBUILD MODE',targets:['Battery','Magnets','Wires','Bandage'],safePocket:['Battery','Magnets','Stim'],consumables:['Bandage','Stim']},pvp:{label:'PvP Push',short:'Go in geared. Sustain first, then pressure.',status:'PVP READY',targets:['Shield Charger','Bandage','Stim','Medium Gun Parts'],safePocket:['Stim','Bandage'],consumables:['Bandage','Shield Charger','Stim']},trials:{label:'Trials',short:'Mobility and sustain before greed.',status:'TRIALS READY',targets:['Stim','Bandage','Shield Charger','Battery'],safePocket:['Stim','Bandage'],consumables:['Stim','Bandage','Shield Charger']},weapon:{label:'Weapon Upgrade',short:'Farm upgrade parts and get out clean.',status:'UPGRADE RUN',targets:['Medium Gun Parts','Heavy Gun Parts','Battery','Magnets'],safePocket:['Battery','Magnets'],consumables:['Bandage','Stim']}};
-    const spawnData={dam:{label:'Dam',routeSummary:'Industrial path with strong oil and weapon-part value.',steps:['Spawn in','Battery / oil line','Weapon parts','Extract'],boosts:['Battery','Crude Oil','Medium Gun Parts','Heavy Gun Parts']},spaceport:{label:'Spaceport',routeSummary:'Best electronics loop for quick component recovery.',steps:['Spawn in','Electronics loop','Containers','Extract'],boosts:['Magnets','Wires','Battery','Medium Gun Parts']},bluegate:{label:'Blue Gate',routeSummary:'Utility path with reliable components and shield loot.',steps:['Spawn in','Utility rooms','Shield path','Extract'],boosts:['Magnets','Wires','Shield Charger','Light Gun Parts']},stella:{label:'Stella Montis',routeSummary:'Medical-focused route for sustain and safer exits.',steps:['Spawn in','Medical path','Support loot','Extract'],boosts:['Bandage','Shield Charger','Stim','Canister']},buried:{label:'Buried City',routeSummary:'High risk, better for brave farming and fast resets.',steps:['Spawn in','Rare loot line','Quick check','Extract fast'],boosts:['Heavy Gun Parts','Bandage','Crude Oil']}};
-    const itemMeta={'Battery':{img:'battery.png',icon:'🔋',hint:'workshop + craft'},'Magnets':{img:'magnets.png',icon:'🧲',hint:'electronics'},'Wires':{img:'wires.png',icon:'🧵',hint:'utility + craft'},'Crude Oil':{img:'crude-oil.png',icon:'🛢️',hint:'fuel + craft'},'Canister':{img:'canister.png',icon:'🧴',hint:'sustain / fuel'},'Bandage':{img:'bandage.png',icon:'🩹',hint:'healing'},'Shield Charger':{img:'shield-charger.png',icon:'🛡️',hint:'shield sustain'},'Stim':{img:'stim.png',icon:'💉',hint:'stamina / movement'},'Medium Gun Parts':{img:'medium-gun-parts.png',icon:'🔧',hint:'weapon upgrade'},'Heavy Gun Parts':{img:'heavy-gun-parts.png',icon:'⚙️',hint:'high tier weapon'},'Light Gun Parts':{img:'light-gun-parts.png',icon:'🎯',hint:'backup weapon'},'Plastic Parts':{img:'plastic-parts.png',icon:'🧰',hint:'gear bench'},'Fabric':{img:'fabric.png',icon:'🧻',hint:'medical / bench'},'Metal Parts':{img:'metal-parts.png',icon:'🔩',hint:'gunsmith / refiner'},'Rubber Parts':{img:'rubber-parts.png',icon:'🛞',hint:'gunsmith'},'ARC Alloy':{img:'arc-alloy.png',icon:'🪙',hint:'utility / med / explosives'},'Chemicals':{img:'chemicals.png',icon:'🧪',hint:'explosives / med'},'ARC Powercell':{img:'arc-powercell.png',icon:'🔌',hint:'refiner / shields'},'Aphelion Rifle':{img:'aphelion-rifle.png',icon:'⚡',hint:'legendary rifle'},'Arpeggio IV':{img:'arpeggio-4.png',icon:'🎼',hint:'burst rifle'},'Anvil IV':{img:'anvil-4.png',icon:'🔨',hint:'heavy pistol'},'Il Toro IV':{img:'il-toro-4.png',icon:'🐂',hint:'power rifle'},'Stitcher IV':{img:'stitcher-4.png',icon:'✂️',hint:'trusted all-rounder'},'Equalizer IV':{img:'equalizer-4.png',icon:'🎚️',hint:'smg option'},'Mistral IV':{img:'mistral-4.png',icon:'🌪️',hint:'mobile weapon'}};
-    const weaponOptions=['Stitcher IV','Il Toro IV','Equalizer IV','Arpeggio IV','Anvil IV','Mistral IV','Aphelion Rifle'];
-    const stashItems=['Battery','Magnets','Wires','Crude Oil','Canister','Bandage','Shield Charger','Stim','Medium Gun Parts','Heavy Gun Parts','Light Gun Parts','Plastic Parts','Fabric','Metal Parts','Rubber Parts','ARC Alloy','Chemicals','ARC Powercell'];
-    const workbenchProfiles={early:[{name:'Scrappy',level:'1/6',icon:'🐔',need:['No requirements for this level'],focus:'Start point for early upgrades'},{name:'Gunsmith',level:'1/3',icon:'🔫',need:['Metal Parts','Rubber Parts'],focus:'Weapons and gun crafting'},{name:'Gear Bench',level:'1/3',icon:'🧰',need:['Plastic Parts','Fabric'],focus:'Armor and support gear'},{name:'Medical Lab',level:'1/3',icon:'🩺',need:['Fabric','ARC Alloy'],focus:'Bandages, healing, support'},{name:'Utility Station',level:'1/3',icon:'🔌',need:['Plastic Parts','ARC Alloy'],focus:'Utility and electronics'},{name:'Explosives Station',level:'1/3',icon:'💣',need:['Chemicals','ARC Alloy'],focus:'Explosive tools and crafting'},{name:'Refiner',level:'1/3',icon:'♻️',need:['Metal Parts','ARC Powercell'],focus:'Refining higher-value materials'}],mid:[{name:'Gunsmith',level:'2/3',icon:'🔫',need:['Metal Parts','Rubber Parts','Battery'],focus:'Push better weapon builds'},{name:'Gear Bench',level:'2/3',icon:'🧰',need:['Plastic Parts','Fabric','Wires'],focus:'Raise gear floor'},{name:'Medical Lab',level:'2/3',icon:'🩺',need:['Fabric','ARC Alloy','Chemicals'],focus:'Reliable sustain and med prep'},{name:'Utility Station',level:'2/3',icon:'🔌',need:['Plastic Parts','ARC Alloy','Magnets'],focus:'Utility and support'},{name:'Explosives Station',level:'2/3',icon:'💣',need:['Chemicals','ARC Alloy','Canister'],focus:'Unlock more aggressive options'},{name:'Refiner',level:'2/3',icon:'♻️',need:['Metal Parts','ARC Powercell','Battery'],focus:'More advanced material flow'}],endgame:[{name:'PvP Craft Loop',level:'Max',icon:'⚔️',need:['Shield Charger','Bandage','Stim','Medium Gun Parts'],focus:'PvP sustain and raid prep'},{name:'Weapon Upgrades',level:'Max',icon:'🔧',need:['Battery','Magnets','Wires','Heavy Gun Parts'],focus:'Top-end weapons and upgrades'},{name:'Support Refill',level:'Max',icon:'➕',need:['Bandage','Stim','Shield Charger'],focus:'Heals and support loop'},{name:'ARC Materials',level:'Max',icon:'🪙',need:['ARC Alloy','ARC Powercell'],focus:'Premium material maintenance'}],recovery:[{name:'Cheap Rebuild',level:'Recovery',icon:'🛠️',need:['Battery','Magnets','Wires'],focus:'Get back on your feet'},{name:'Safe Pocket Value',level:'Recovery',icon:'🎒',need:['Battery','Stim'],focus:'Protect guaranteed value'},{name:'Medical Refill',level:'Recovery',icon:'🩹',need:['Bandage','Stim'],focus:'Restore sustain first'},{name:'Weapon Restart',level:'Recovery',icon:'🎯',need:['Light Gun Parts','Medium Gun Parts'],focus:'Rebuild serviceable weapons'}]};
-    const defaultProfiles={Jartukainen:{name:'Jartukainen',weaponPreset:'Stitcher IV',weaponCustom:'',package:'rebuild',spawn:'spaceport',stage:'endgame',upgradeWorkbench:'Gunsmith',upgradeCurrent:1,upgradeTarget:2,stash:{Battery:8,Magnets:5,Wires:9,'Crude Oil':2,Canister:4,Bandage:6,'Shield Charger':4,Stim:5,'Medium Gun Parts':5,'Heavy Gun Parts':2,'Light Gun Parts':3,'Plastic Parts':6,Fabric:5,'Metal Parts':4,'Rubber Parts':2,'ARC Alloy':3,Chemicals:2,'ARC Powercell':1}}};
-    const upgradeData={
-      'Gunsmith':{1:{'Metal Parts':20,'Rubber Parts':30},2:{'Metal Parts':30,'Rubber Parts':40,'Battery':8},3:{'Metal Parts':45,'Rubber Parts':60,'Battery':12,'ARC Alloy':5}},
-      'Gear Bench':{1:{'Plastic Parts':25,'Fabric':30},2:{'Plastic Parts':35,'Fabric':40,'Wires':8},3:{'Plastic Parts':50,'Fabric':55,'Wires':12,'ARC Alloy':6}},
-      'Medical Lab':{1:{'Fabric':50,'ARC Alloy':6},2:{'Fabric':65,'ARC Alloy':8,'Chemicals':10},3:{'Fabric':80,'ARC Alloy':12,'Chemicals':18,'Stim':8}},
-      'Utility Station':{1:{'Plastic Parts':50,'ARC Alloy':6},2:{'Plastic Parts':65,'ARC Alloy':8,'Magnets':10},3:{'Plastic Parts':80,'ARC Alloy':12,'Magnets':16,'Battery':8}},
-      'Explosives Station':{1:{'Chemicals':50,'ARC Alloy':6},2:{'Chemicals':65,'ARC Alloy':8,'Canister':10},3:{'Chemicals':80,'ARC Alloy':12,'Canister':16,'Crude Oil':10}},
-      'Refiner':{1:{'Metal Parts':60,'ARC Powercell':5},2:{'Metal Parts':80,'ARC Powercell':8,'Battery':10},3:{'Metal Parts':100,'ARC Powercell':12,'Battery':16,'Magnets':12}}
-    };
+<label>Weapon Goal</label>
+<select id="weapon"></select>
 
-    const packageSelect=document.getElementById('package'); const spawnSelect=document.getElementById('spawn'); const presetGrid=document.getElementById('presetGrid'); const playerInput=document.getElementById('player'); const weaponPreset=document.getElementById('weaponPreset'); const weaponCustom=document.getElementById('weaponCustom'); const profileStage=document.getElementById('profileStage'); const profileSelect=document.getElementById('profileSelect'); const newProfileBtn=document.getElementById('newProfileBtn'); const deleteProfileBtn=document.getElementById('deleteProfileBtn'); const packageSummary=document.getElementById('packageSummary'); const statusText=document.getElementById('statusText'); const spawnName=document.getElementById('spawnName'); const routeSummary=document.getElementById('routeSummary'); const routeVisual=document.getElementById('routeVisual'); const priorityGrid=document.getElementById('priorityGrid'); const safePocketRow=document.getElementById('safePocketRow'); const consumablesRow=document.getElementById('consumablesRow'); const weaponGoalText=document.getElementById('weaponGoalText'); const workbenchGrid=document.getElementById('workbenchGrid'); const stashGrid=document.getElementById('stashGrid'); const stashHighlights=document.getElementById('stashHighlights'); const profileMeta=document.getElementById('profileMeta'); const imageLibraryGrid=document.getElementById('imageLibraryGrid'); const summaryBox=document.getElementById('summaryBox'); const copyBtn=document.getElementById('copyBtn'); const modeBtn=document.getElementById('modeBtn'); const upgradeWorkbench=document.getElementById('upgradeWorkbench'); const upgradeCurrent=document.getElementById('upgradeCurrent'); const upgradeTarget=document.getElementById('upgradeTarget'); const upgradeSummary=document.getElementById('upgradeSummary'); const upgradeGrid=document.getElementById('upgradeGrid');
-    let profiles=JSON.parse(localStorage.getItem('arcProfiles')||'null')||JSON.parse(JSON.stringify(defaultProfiles)); let itemImages=JSON.parse(localStorage.getItem('arcItemImages')||'{}');
-    function saveProfiles(){localStorage.setItem('arcProfiles',JSON.stringify(profiles));} function saveImages(){localStorage.setItem('arcItemImages',JSON.stringify(itemImages));}
-    function toKebab(value){return String(value).toLowerCase().replace(/\biv\b/g,'4').replace(/\biii\b/g,'3').replace(/\bii\b/g,'2').replace(/\bi\b/g,'1').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');}
-    function getMetaImage(item){const meta=itemMeta[item]||{};return iconBase+(meta.img||toKebab(item)+'.png');}
-    function renderIconContent(item){const meta=itemMeta[item]||{icon:'📦'};const src=itemImages[item]||getMetaImage(item);return `<img src="${src}" alt="${item}" loading="lazy" onerror="this.onerror=null;this.replaceWith(document.createTextNode('${meta.icon||'📦'}'))">`;}
-    function setSelectOptions(select, list){select.innerHTML=''; list.forEach(v=>{const o=document.createElement('option'); o.value=v.value; o.textContent=v.label; select.appendChild(o);});}
-    function populateControls(){
-      setSelectOptions(profileSelect,Object.keys(profiles).map(v=>({value:v,label:v})));
-      setSelectOptions(weaponPreset,weaponOptions.map(v=>({value:v,label:v})));
-      setSelectOptions(packageSelect,Object.entries(packageData).map(([k,v])=>({value:k,label:v.label})));
-      setSelectOptions(spawnSelect,Object.entries(spawnData).map(([k,v])=>({value:k,label:v.label})));
-      presetGrid.innerHTML='';
-      Object.entries(packageData).forEach(([key,pkg])=>{const btn=document.createElement('button'); btn.type='button'; btn.className='preset'; btn.dataset.preset=key; btn.innerHTML=`<strong>${pkg.label}</strong><span>${pkg.short}</span>`; btn.addEventListener('click',()=>{packageSelect.value=key; updateView();}); presetGrid.appendChild(btn);});
-    }
-    function getPriorityList(pkg,spawn){return [...new Set([...spawn.boosts,...pkg.targets])].slice(0,6);} 
-    function renderRoute(steps){routeVisual.innerHTML=''; steps.forEach((step,index)=>{const row=document.createElement('div'); row.className='route-step'; row.innerHTML=`<span class="route-num">${index+1}</span><span>${step}</span>`; routeVisual.appendChild(row);});}
-    function renderPills(target, values){target.innerHTML=''; values.forEach(v=>{const pill=document.createElement('span'); pill.className='pill'; pill.textContent=v; target.appendChild(pill);});}
-    function renderPriority(items){priorityGrid.innerHTML=''; items.forEach(item=>{const meta=itemMeta[item]||{hint:'loot'}; const card=document.createElement('div'); card.className='loot-item'; card.innerHTML=`<div class="loot-icon">${renderIconContent(item)}</div><strong>${item}</strong><small>${meta.hint||''}</small>`; priorityGrid.appendChild(card);});}
-    function renderWorkbench(stageKey){const cards=workbenchProfiles[stageKey]||[]; workbenchGrid.innerHTML=''; cards.forEach(cardData=>{const card=document.createElement('div'); card.className='workbench-card'; card.innerHTML=`<div class="workbench-top"><div><div class="workbench-name">${cardData.name}</div><div class="workbench-level">Level ${cardData.level}</div></div><div class="workbench-icon">${cardData.icon}</div></div><div class="workbench-body"><div class="workbench-focus">${cardData.focus}</div><div class="need-list">${cardData.need.map(need=>`<span class="need-pill">${need}</span>`).join('')}</div></div>`; workbenchGrid.appendChild(card);});}
-    function renderStash(profile){const stash=profile.stash||{}; stashGrid.innerHTML=''; stashHighlights.innerHTML=''; stashItems.forEach(item=>{const meta=itemMeta[item]||{hint:'loot'}; const amount=stash[item]??0; const card=document.createElement('div'); card.className='loot-item'; card.style.minHeight='178px'; card.innerHTML=`<div class="loot-icon">${renderIconContent(item)}</div><strong>${item}</strong><small>${meta.hint||''}</small><input data-stash-item="${item}" type="number" min="0" value="${amount}" style="margin-top:6px;text-align:center;font-weight:900;">`; stashGrid.appendChild(card);}); stashItems.map(name=>[name,stash[name]??0]).sort((a,b)=>a[1]-b[1]).slice(0,4).forEach(([name,amount])=>{const pill=document.createElement('span'); pill.className='pill'; pill.textContent=`${name}: ${amount}`; stashHighlights.appendChild(pill);});}
-    function renderImageLibrary(){imageLibraryGrid.innerHTML=''; stashItems.forEach(item=>{const meta=itemMeta[item]||{icon:'📦',hint:'loot'}; const preview=itemImages[item]||getMetaImage(item); const card=document.createElement('div'); card.className='image-card'; card.innerHTML=`<div class="mini-preview"><img src="${preview}" alt="${item}" loading="lazy" onerror="this.onerror=null;this.replaceWith(document.createTextNode('${meta.icon||'📦'}'))"></div><div style="text-align:center;font-weight:900;margin-bottom:4px;font-size:13px;color:var(--text);">${item}</div><div style="text-align:center;color:var(--muted);font-size:11px;margin-bottom:10px;">${meta.hint||''}</div><input type="file" accept="image/*" data-image-item="${item}"><button type="button" class="ghost-btn tiny-btn" data-clear-image="${item}">Use default CDN image</button>`; imageLibraryGrid.appendChild(card);});}
-    function loadProfile(name){const profile=profiles[name]; if(!profile) return; playerInput.value=profile.name||name; weaponPreset.value=profile.weaponPreset||'Stitcher IV'; weaponCustom.value=profile.weaponCustom||''; packageSelect.value=profile.package||'rebuild'; spawnSelect.value=profile.spawn||'spaceport'; profileStage.value=profile.stage||'endgame'; upgradeWorkbench.value=profile.upgradeWorkbench||'Gunsmith'; upgradeCurrent.value=String(profile.upgradeCurrent||1); upgradeTarget.value=String(profile.upgradeTarget||2); renderStash(profile);}
-    function persistCurrentProfile(){const key=profileSelect.value||playerInput.value||'Player'; if(!profiles[key]) profiles[key]={name:key,weaponPreset:'Stitcher IV',weaponCustom:'',package:'loot',spawn:'dam',stage:'early',upgradeWorkbench:'Gunsmith',upgradeCurrent:1,upgradeTarget:2,stash:Object.fromEntries(stashItems.map(i=>[i,0]))}; profiles[key].name=playerInput.value||key; profiles[key].weaponPreset=weaponPreset.value; profiles[key].weaponCustom=weaponCustom.value; profiles[key].package=packageSelect.value; profiles[key].spawn=spawnSelect.value; profiles[key].stage=profileStage.value; profiles[key].upgradeWorkbench=upgradeWorkbench.value; profiles[key].upgradeCurrent=Number(upgradeCurrent.value||1); profiles[key].upgradeTarget=Number(upgradeTarget.value||2); document.querySelectorAll('[data-stash-item]').forEach(input=>{profiles[key].stash[input.dataset.stashItem]=Number(input.value||0);}); saveProfiles();}
-    function updatePresetButtons(activeKey){document.querySelectorAll('.preset').forEach(btn=>btn.classList.toggle('active', btn.dataset.preset===activeKey));}
-    function renderUpgradePanel(profile){
-      const bench=upgradeWorkbench.value;
-      const current=Math.max(1, Number(upgradeCurrent.value||1));
-      const target=Math.max(current, Number(upgradeTarget.value||current));
-      if(String(target)!==upgradeTarget.value) upgradeTarget.value=String(target);
-      const stash=profile.stash||{};
-      const levels=upgradeData[bench]||{};
-      const totals={};
-      for(let lvl=current; lvl<=target; lvl++){
-        const req=levels[lvl]||{};
-        Object.entries(req).forEach(([item,amount])=>{ totals[item]=(totals[item]||0)+amount; });
-      }
-      const entries=Object.entries(totals);
-      upgradeGrid.innerHTML='';
-      if(!entries.length){
-        upgradeSummary.textContent=`${bench} ${current} → ${target}: no upgrade data for this selection.`;
-        return;
-      }
-      const missingEntries=[];
-      entries.forEach(([item,need])=>{
-        const have=stash[item]||0;
-        const missing=Math.max(0, need-have);
-        if(missing>0) missingEntries.push(`${item} ${missing}`);
-        const meta=itemMeta[item]||{hint:'upgrade material'};
-        const card=document.createElement('div');
-        card.className='loot-item';
-        card.innerHTML=`<div class="loot-icon">${renderIconContent(item)}</div><strong>${item}</strong><small>Need ${need} • Have ${have} • ${missing>0 ? 'Missing '+missing : 'Ready'}</small>`;
-        card.style.outline=missing>0 ? '2px solid rgba(255,75,75,.45)' : '2px solid rgba(86,240,183,.55)';
-        upgradeGrid.appendChild(card);
-      });
-      upgradeSummary.textContent=`${bench} ${current} → ${target}. ${missingEntries.length ? 'Missing: '+missingEntries.join(', ') : 'All required materials are ready in stash.'}`;
-    }
-    function updateView(){const pkg=packageData[packageSelect.value||'rebuild']; const spawn=spawnData[spawnSelect.value||'spaceport']; const player=playerInput.value||'Player'; const weapon=weaponCustom.value.trim()||weaponPreset.value||'Stitcher IV'; const stage=profileStage.value||'endgame'; const profileName=profileSelect.value||player; const currentProfile=profiles[profileName]||{stash:{}}; const priority=getPriorityList(pkg,spawn); updatePresetButtons(packageSelect.value); packageSummary.textContent=pkg.short; statusText.textContent=pkg.status; spawnName.textContent=spawn.label; routeSummary.textContent=spawn.routeSummary; renderRoute(spawn.steps); renderPriority(priority); renderPills(safePocketRow,pkg.safePocket); renderPills(consumablesRow,pkg.consumables); renderWorkbench(stage); renderStash(currentProfile); renderUpgradePanel(currentProfile); weaponGoalText.textContent=weapon; profileMeta.textContent=`Profile: ${profileName}. Stage: ${profileStage.options[profileStage.selectedIndex].text}. One profile per player keeps stash, workbench focus, and weapon goal personal.`; summaryBox.textContent=['ARC RAID PLAN',`Player: ${player}`,`Profile: ${profileName}`,`Package: ${pkg.label}`,`Spawn: ${spawn.label}`,`Profile Stage: ${profileStage.options[profileStage.selectedIndex].text}`,`Priority Loot: ${priority.join(', ')}`,`Safe Pocket: ${pkg.safePocket.join(', ')}`,`Consumables: ${pkg.consumables.join(', ')}`,`Weapon Goal: ${weapon}`,`Workbench Focus: ${(workbenchProfiles[stage]||[]).map(x=>x.name).join(', ')}`,`Upgrade Panel: ${upgradeWorkbench.value} ${upgradeCurrent.value} → ${upgradeTarget.value}`,`Route: ${spawn.steps.join(' → ')}`].join('
-'); persistCurrentProfile();}
-    function setViewMode(mode){document.body.classList.toggle('glance', mode==='glance'); document.querySelectorAll('.toggle-btn').forEach(btn=>btn.classList.toggle('active', btn.dataset.view===mode)); modeBtn.textContent=mode==='glance'?'Full View':'Glance Mode';}
-    copyBtn.addEventListener('click', async()=>{try{await navigator.clipboard.writeText(summaryBox.textContent); copyBtn.textContent='Copied'; setTimeout(()=>copyBtn.textContent='Copy Raid Plan',1200);}catch{alert('Copy failed on this device.');}});
-    modeBtn.addEventListener('click', ()=> setViewMode(document.body.classList.contains('glance')?'full':'glance'));
-    document.addEventListener('click', event=>{if(event.target.matches('.toggle-btn')) setViewMode(event.target.dataset.view); if(event.target.matches('[data-clear-image]')){delete itemImages[event.target.dataset.clearImage]; saveImages(); renderImageLibrary(); updateView();}});
-    newProfileBtn.addEventListener('click', ()=>{const name=prompt('New profile name'); if(!name) return; if(profiles[name]) return alert('That profile already exists.'); profiles[name]={name,weaponPreset:'Stitcher IV',weaponCustom:'',package:'loot',spawn:'dam',stage:'early',stash:Object.fromEntries(stashItems.map(i=>[i,0]))}; saveProfiles(); populateControls(); profileSelect.value=name; loadProfile(name); updateView();});
-    deleteProfileBtn.addEventListener('click', ()=>{const name=profileSelect.value; if(!name) return; if(Object.keys(profiles).length===1) return alert('Keep at least one profile.'); if(!confirm(`Delete profile ${name}?`)) return; delete profiles[name]; saveProfiles(); populateControls(); profileSelect.value=Object.keys(profiles)[0]; loadProfile(profileSelect.value); updateView();});
-    [packageSelect,spawnSelect,playerInput,weaponPreset,weaponCustom,profileStage,profileSelect,upgradeWorkbench,upgradeCurrent,upgradeTarget].forEach(el=>{el.addEventListener('input', updateView); el.addEventListener('change', ()=>{if(el===profileSelect) loadProfile(profileSelect.value); updateView();});});
-    document.addEventListener('change', event=>{
-  if(event.target.matches('[data-image-item]')){
-    const profile = profiles[profileSelect.value];
-    populateControls();
-  }
+<label>Raid Package</label>
+<select id="package"></select>
+
+<label>Spawn</label>
+<select id="spawn"></select>
+
+<label>Progress Stage</label>
+<select id="stage">
+<option>Season Start</option>
+<option>Mid Progress</option>
+<option>Endgame</option>
+</select>
+
+</div>
+
+<div>
+
+<div class="card">
+<div class="card-title">Raid Snapshot</div>
+
+<div class="snapshot-grid">
+
+<div class="box">
+<h3>Route</h3>
+<div id="route"></div>
+</div>
+
+<div class="box">
+<h3>Priority Loot</h3>
+<div id="loot"></div>
+</div>
+
+<div class="box">
+<h3>Safe Pocket</h3>
+<div id="safe"></div>
+</div>
+
+<div class="box">
+<h3>Consumables</h3>
+<div id="cons"></div>
+</div>
+
+</div>
+
+<div class="box" style="margin-top:16px">
+<h3>Weapon Goal</h3>
+<div id="weaponGoal"></div>
+</div>
+
+</div>
+
+<div class="card" style="margin-top:20px">
+<div class="card-title">Stash Tracker</div>
+<div class="stash-grid" id="stash"></div>
+</div>
+
+<div class="card" style="margin-top:20px">
+<div class="card-title">Workbench Planner</div>
+<div class="workbench-grid" id="workbench"></div>
+</div>
+
+<div class="card" style="margin-top:20px">
+<div class="card-title">Raid Plan</div>
+<div class="summary" id="summary"></div>
+<button id="copy">Copy Raid Plan</button>
+</div>
+
+</div>
+
+</div>
+</div>
+
+<script>
+
+const weapons=[
+"Stitcher IV","Il Toro IV","Equalizer IV","Arpeggio IV","Anvil IV","Mistral IV","Aphelion Rifle"
+];
+
+const packages={
+"PvP Push":{
+loot:["Medium Gun Parts","Battery","Magnets"],
+safe:["Stim","Bandage"],
+cons:["Bandage","Stim"]
+},
+"Rebuild":{
+loot:["Metal Parts","Fabric","Plastic Parts"],
+safe:["Battery"],
+cons:["Bandage"]
+}
+};
+
+const spawns={
+"Spaceport":["Spawn","Electronics loop","Containers","Extract"],
+"Dam":["Spawn","Turbines","Storage","Extract"]
+};
+
+const stashItems=[
+"Battery","Magnets","Wires","Metal Parts","Fabric","Plastic Parts","Rubber Parts","ARC Alloy","Chemicals"
+];
+
+const workbenches=[
+"Gunsmith","Gear Bench","Medical Lab","Utility Station","Explosives Station","Refiner"
+];
+
+let profiles={
+"Jartukainen":{
+player:"Jartukainen",
+weapon:"Stitcher IV",
+package:"PvP Push",
+spawn:"Spaceport",
+stash:{}
+}
+};
+
+stashItems.forEach(i=>profiles.Jartukainen.stash[i]=0);
+
+const profileSel=document.getElementById("profile");
+const playerInput=document.getElementById("player");
+const weaponSel=document.getElementById("weapon");
+const packageSel=document.getElementById("package");
+const spawnSel=document.getElementById("spawn");
+
+const routeBox=document.getElementById("route");
+const lootBox=document.getElementById("loot");
+const safeBox=document.getElementById("safe");
+const consBox=document.getElementById("cons");
+const weaponGoal=document.getElementById("weaponGoal");
+
+const stashGrid=document.getElementById("stash");
+const workbenchGrid=document.getElementById("workbench");
+const summary=document.getElementById("summary");
+
+function init(){
+
+weapons.forEach(w=>{
+let o=document.createElement("option");
+o.textContent=w;
+weaponSel.appendChild(o);
 });
 
-profileSelect.value = Object.keys(profiles)[0];
-loadProfile(profileSelect.value);
-updateView();
+Object.keys(packages).forEach(p=>{
+let o=document.createElement("option");
+o.textContent=p;
+packageSel.appendChild(o);
+});
+
+Object.keys(spawns).forEach(s=>{
+let o=document.createElement("option");
+o.textContent=s;
+spawnSel.appendChild(o);
+});
+
+Object.keys(profiles).forEach(p=>{
+let o=document.createElement("option");
+o.textContent=p;
+profileSel.appendChild(o);
+});
+
+renderStash();
+renderWorkbench();
+loadProfile(profileSel.value);
+update();
+}
+
+function renderStash(){
+
+stashItems.forEach(item=>{
+
+let div=document.createElement("div");
+div.className="stash-item";
+
+let label=document.createElement("div");
+label.textContent=item;
+
+let input=document.createElement("input");
+input.type="number";
+input.value=0;
+
+input.oninput=()=>{
+profiles[profileSel.value].stash[item]=Number(input.value);
+update();
+}
+
+
+div.appendChild(label);
+div.appendChild(input);
+stashGrid.appendChild(div);
+
+});
+
+}
+
+function renderWorkbench(){
+
+workbenches.forEach(w=>{
+
+let div=document.createElement("div");
+div.className="workbench-card";
+div.innerHTML=`<strong>${w}</strong><div style="margin-top:6px;color:#9bb0e3">upgrade planner</div>`;
+
+workbenchGrid.appendChild(div);
+
+});
+
+}
+
+function loadProfile(name){
+let p=profiles[name];
+playerInput.value=p.player;
+weaponSel.value=p.weapon;
+packageSel.value=p.package;
+spawnSel.value=p.spawn;
+}
+
+function update(){
+
+let p=profiles[profileSel.value];
+
+let pkg=packages[p.package];
+let route=spawns[p.spawn];
+
+routeBox.innerHTML="";
+route.forEach(r=>routeBox.innerHTML+=`<div>${r}</div>`);
+
+lootBox.innerHTML="";
+pkg.loot.forEach(i=>lootBox.innerHTML+=`<span class='pill'>${i}</span>`);
+
+safeBox.innerHTML="";
+pkg.safe.forEach(i=>safeBox.innerHTML+=`<span class='pill'>${i}</span>`);
+
+consBox.innerHTML="";
+pkg.cons.forEach(i=>consBox.innerHTML+=`<span class='pill'>${i}</span>`);
+
+weaponGoal.textContent=p.weapon;
+
+summary.textContent=`ARC RAID PLAN
+Player: ${p.player}
+Package: ${p.package}
+Spawn: ${p.spawn}
+Weapon Goal: ${p.weapon}
+Route: ${route.join(" -> ")}`;
+
+}
+
+playerInput.oninput=()=>{profiles[profileSel.value].player=playerInput.value;update();}
+weaponSel.onchange=()=>{profiles[profileSel.value].weapon=weaponSel.value;update();}
+packageSel.onchange=()=>{profiles[profileSel.value].package=packageSel.value;update();}
+spawnSel.onchange=()=>{profiles[profileSel.value].spawn=spawnSel.value;update();}
+profileSel.onchange=()=>loadProfile(profileSel.value);
+
+init();
+
+</script>
+
+</body>
+</html>
