@@ -88,7 +88,7 @@
     <div class="hero">
       <div>
         <h1>ARC Raiders Meta Tool Beta</h1>
-        <div class="subtitle">Development build. Live version stays safe in index.html. This beta adds Smart Loot Advisor v2 and Workbench Meta System v1.</div>
+        <div class="subtitle">Development build. Live version stays safe in index.html. This beta adds Smart Loot Advisor v2, Workbench Meta System v1, and META Priority System v3.</div>
       </div>
       <div>
         <button class="primary-btn" id="copyBtn">Copy Raid Plan</button>
@@ -373,7 +373,6 @@ function fillSelect(select, values){
 }
 
 function currentProfile(){ return profiles[profileSelect.value]; }
-
 function getBenchMeta(){ return WORKBENCH_META[currentProfile().wbBench]; }
 
 function refreshWorkbenchLevelOptions(){
@@ -448,16 +447,50 @@ function getUpgradeNeeds(profile){
   }));
 }
 
+function getPriorityTargets(profile){
+  const scores = {};
+  const addScore = (item, amount) => { scores[item] = (scores[item] || 0) + amount; };
+
+  const low = getLowStash(profile);
+  low.forEach(({ item, amount }, index) => {
+    const weight = amount === 0 ? 10 : amount < 3 ? 8 : amount < 6 ? 5 : 2;
+    addScore(item, Math.max(1, weight - index));
+  });
+
+  getWorkbenchNeedSummary(profile).forEach(({ item, amount }) => {
+    addScore(item, amount === 0 ? 9 : amount < 4 ? 7 : 4);
+  });
+
+  getUpgradeNeeds(profile).forEach(row => {
+    if (row.missing > 0) addScore(row.item, 12 + Math.min(row.missing, 10));
+  });
+
+  (PACKAGES[profile.package]?.loot || []).forEach((item, index) => {
+    addScore(item, 6 - Math.min(index, 4));
+  });
+
+  (SPAWNS[profile.spawn]?.strong || []).forEach((item, index) => {
+    addScore(item, 5 - Math.min(index, 3));
+  });
+
+  return Object.entries(scores)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([item, score]) => ({ item, score }));
+}
+
 function getRaidAdvice(profile){
   const low = getLowStash(profile).map(x => x.item);
   const stageNeeds = getWorkbenchNeedSummary(profile).map(x => x.item);
   const upgradeNeeds = getUpgradeNeeds(profile).filter(x => x.missing > 0).map(x => x.item);
+  const priorityItems = getPriorityTargets(profile).map(x => x.item);
   const spawnScores = Object.entries(SPAWNS).map(([name, cfg]) => {
     let score = 0;
     cfg.strong.forEach(item => {
       if (low.includes(item)) score += 2;
       if (stageNeeds.includes(item)) score += 2;
       if (upgradeNeeds.includes(item)) score += 4;
+      if (priorityItems.includes(item)) score += 3;
       if ((PACKAGES[profile.package]?.loot || []).includes(item)) score += 2;
     });
     return { name, score, items: cfg.strong };
@@ -482,10 +515,12 @@ function renderAdvisor(){
   const advice = getRaidAdvice(p);
   const packageLoot = PACKAGES[p.package].loot.slice(0,3).join(', ');
   const topMissing = getUpgradeNeeds(p).filter(x => x.missing > 0).slice(0,3).map(x => x.item).join(', ');
+  const truePriority = getPriorityTargets(p).slice(0,3).map(x => x.item).join(', ');
   raidAdviceBox.innerHTML = `
     <div class="kv-row"><span>Best spawn now</span><span class="ok">${advice.name}</span></div>
     <div class="kv-row"><span>Why</span><span>${advice.items.join(', ')}</span></div>
     <div class="kv-row"><span>Upgrade farm</span><span>${topMissing || 'None'}</span></div>
+    <div class="kv-row"><span>True priority</span><span>${truePriority}</span></div>
     <div class="kv-row"><span>Raid focus</span><span>${packageLoot}</span></div>
   `;
 }
@@ -506,7 +541,7 @@ function renderUpgradeCalculator(){
     const card = document.createElement('div');
     card.className = 'upgrade-card';
     card.innerHTML = `
-      <div class="loot-icon"> <img src="${iconUrl(r.item)}" alt="${r.item}" onerror="this.remove()"> </div>
+      <div class="loot-icon"><img src="${iconUrl(r.item)}" alt="${r.item}" onerror="this.remove()"></div>
       <strong style="margin-top:10px">${r.item}</strong>
       <div class="tiny">Need ${r.need} • Have ${r.have} • Missing <span class="${cls}">${r.missing}</span></div>
       <div class="bar"><div class="bar-fill" style="width:${pct}%"></div></div>
@@ -520,13 +555,15 @@ function renderRaid(){
   const pkg = PACKAGES[p.package];
   const spawn = SPAWNS[p.spawn];
   const advice = getRaidAdvice(p);
+  const priorityTargets = getPriorityTargets(p);
 
   routeBox.innerHTML = spawn.route.map((r,i)=>`<div style="margin-bottom:8px">${i+1}. ${r}</div>`).join("");
 
-  lootBox.innerHTML = pkg.loot.map(item => `
+  lootBox.innerHTML = priorityTargets.map(({item, score}) => `
     <div class="loot-item">
       <div class="loot-icon"><img src="${iconUrl(item)}" alt="${item}" onerror="this.remove()"></div>
       <strong>${item}</strong>
+      <div class="tiny">Priority ${score}</div>
     </div>
   `).join("");
 
@@ -535,6 +572,7 @@ function renderRaid(){
   weaponGoalBox.textContent = p.weapon;
 
   const missingUpgrades = getUpgradeNeeds(p).filter(x => x.missing > 0).map(x => `${x.item} ${x.missing}`).join(', ');
+  const truePriority = priorityTargets.map(x => x.item).join(', ');
   summaryBox.textContent =
 `ARC RAID PLAN
 Player: ${p.player}
@@ -542,12 +580,12 @@ Package: ${p.package}
 Spawn: ${p.spawn}
 Stage: ${p.stage}
 Weapon Goal: ${p.weapon}
-Priority Loot: ${pkg.loot.join(", ")}
+True Priority Targets: ${truePriority}
 Safe Pocket: ${pkg.safe.join(", ")}
 Consumables: ${pkg.cons.join(", ")}
 Route: ${spawn.route.join(" -> ")}
 Recommended Spawn Right Now: ${advice.name}
-Recommended Target Items: ${advice.items.join(", ")}
+Recommended Spawn Strength: ${advice.items.join(", ")}
 Workbench Meta: ${p.wbBench} (${p.wbMode === 'single' ? p.wbCurrent : p.wbCurrent + ' -> ' + p.wbTarget})
 Workbench Missing: ${missingUpgrades || 'Nothing missing'}`;
 }
