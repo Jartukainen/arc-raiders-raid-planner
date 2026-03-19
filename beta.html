@@ -35,10 +35,10 @@
         linear-gradient(180deg,var(--bg1),var(--bg2));
       min-height:100vh;
     }
-    .app{max-width:1400px;margin:auto;padding:24px}
+    .app{max-width:1420px;margin:auto;padding:24px}
     .hero{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
     h1{margin:0;font-size:clamp(34px,4.8vw,54px);letter-spacing:-.04em}
-    .subtitle{margin-top:8px;color:var(--muted);max-width:820px;line-height:1.5}
+    .subtitle{margin-top:8px;color:var(--muted);max-width:860px;line-height:1.5}
     .layout{display:grid;grid-template-columns:380px 1fr;gap:20px}
     .stack{display:grid;gap:20px}
     .card{border-radius:22px;overflow:hidden;border:1px solid var(--line);background:linear-gradient(180deg,var(--card),var(--card2));box-shadow:0 20px 42px rgba(0,0,0,.36)}
@@ -48,18 +48,20 @@
     label{display:block;margin:0 0 7px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:#dce6ff}
     input,select{width:100%;padding:11px 13px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:var(--input-bg);color:var(--input-text);font-size:16px;outline:none}
     .profile-row{display:grid;grid-template-columns:1fr auto auto;gap:8px}
+    .wb-row{display:grid;grid-template-columns:1.2fr .8fr .8fr;gap:8px}
     button{border:none;border-radius:12px;padding:11px 15px;font-weight:800;cursor:pointer}
     .primary-btn{background:linear-gradient(90deg,var(--arc-orange),var(--arc-yellow));color:#111}
     .secondary-btn{background:rgba(255,255,255,.92);color:#16203b}
     .snapshot-grid{display:grid;grid-template-columns:1.04fr .96fr;gap:14px}
     .mini-card{border:1px solid rgba(164,190,255,.18);border-radius:18px;padding:16px;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04))}
     .mini-card h3{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:#dce6ff}
-    .priority-grid,.stash-grid,.workbench-grid,.advisor-grid{display:grid;gap:12px}
+    .priority-grid,.stash-grid,.workbench-grid,.advisor-grid,.upgrade-grid{display:grid;gap:12px}
     .priority-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
     .stash-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
     .workbench-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
     .advisor-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
-    .loot-item,.workbench-card,.advisor-card{border-radius:18px;border:1px solid rgba(164,190,255,.18);background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.06));padding:14px}
+    .upgrade-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .loot-item,.workbench-card,.advisor-card,.upgrade-card{border-radius:18px;border:1px solid rgba(164,190,255,.18);background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.06));padding:14px}
     .loot-item{text-align:center;min-height:150px;display:flex;flex-direction:column;justify-content:center;gap:8px}
     .loot-icon{width:64px;height:64px;border-radius:20px;margin:0 auto;display:grid;place-items:center;overflow:hidden;background:linear-gradient(135deg,var(--arc-blue),var(--arc-green));font-size:28px}
     .loot-icon img{width:100%;height:100%;object-fit:cover}
@@ -73,8 +75,12 @@
     .ok{color:var(--ok);font-weight:800}
     .warn{color:var(--warn);font-weight:800}
     .bad{color:var(--bad);font-weight:800}
-    @media(max-width:1100px){.layout,.snapshot-grid{grid-template-columns:1fr}.priority-grid,.workbench-grid,.advisor-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.stash-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-    @media(max-width:760px){.app{padding:14px}.profile-row{grid-template-columns:1fr}.priority-grid,.workbench-grid,.stash-grid,.advisor-grid{grid-template-columns:1fr}.section-title{font-size:24px}h1{font-size:34px}}
+    .upgrade-card strong{display:block;margin-bottom:6px}
+    .tiny{font-size:12px;color:var(--muted)}
+    .bar{height:8px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:8px}
+    .bar-fill{height:100%;background:linear-gradient(90deg,var(--arc-red),var(--arc-orange),var(--arc-yellow),var(--arc-green))}
+    @media(max-width:1100px){.layout,.snapshot-grid{grid-template-columns:1fr}.priority-grid,.workbench-grid,.stash-grid,.advisor-grid,.upgrade-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:760px){.app{padding:14px}.profile-row,.wb-row{grid-template-columns:1fr}.priority-grid,.workbench-grid,.stash-grid,.advisor-grid,.upgrade-grid{grid-template-columns:1fr}.section-title{font-size:24px}h1{font-size:34px}}
   </style>
 </head>
 <body>
@@ -82,7 +88,7 @@
     <div class="hero">
       <div>
         <h1>ARC Raiders Meta Tool Beta</h1>
-        <div class="subtitle">Development build. Live version stays safe in index.html. This beta adds Smart Loot Advisor v2.</div>
+        <div class="subtitle">Development build. Live version stays safe in index.html. This beta adds Smart Loot Advisor v2 and Workbench Meta System v1.</div>
       </div>
       <div>
         <button class="primary-btn" id="copyBtn">Copy Raid Plan</button>
@@ -120,6 +126,29 @@
             <option value="Endgame">Endgame</option>
             <option value="Recovery">Recovery</option>
           </select>
+
+          <div style="margin-top:20px">
+            <div class="section-title" style="font-size:22px;margin-bottom:10px">Workbench Meta</div>
+            <label for="wbSelect">Workbench</label>
+            <select id="wbSelect"></select>
+            <div class="wb-row" style="margin-top:10px">
+              <div>
+                <label for="wbCurrent">Current</label>
+                <select id="wbCurrent"></select>
+              </div>
+              <div>
+                <label for="wbTarget">Target</label>
+                <select id="wbTarget"></select>
+              </div>
+              <div>
+                <label for="wbMode">Mode</label>
+                <select id="wbMode">
+                  <option value="single">One Level</option>
+                  <option value="chain">To Target</option>
+                </select>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -175,6 +204,14 @@
                 <div id="raidAdviceBox" class="kv"></div>
               </div>
             </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-inner">
+            <div class="section-title">Workbench Upgrade Calculator</div>
+            <div id="upgradeSummary" class="summary-box" style="margin-bottom:14px"></div>
+            <div id="upgradeGrid" class="upgrade-grid"></div>
           </div>
         </div>
 
@@ -244,7 +281,7 @@ const SPAWNS = {
 };
 
 const STASH_ITEMS = [
-  "Battery","Magnets","Wires","Metal Parts","Fabric","Plastic Parts","Rubber Parts","ARC Alloy","Chemicals","Stim","Bandage","Shield Charger","Medium Gun Parts","Heavy Gun Parts","Light Gun Parts"
+  "Battery","Magnets","Wires","Metal Parts","Fabric","Plastic Parts","Rubber Parts","ARC Alloy","Chemicals","Stim","Bandage","Shield Charger","Medium Gun Parts","Heavy Gun Parts","Light Gun Parts","Canister","Crude Oil","ARC Powercell"
 ];
 
 const WORKBENCHES = {
@@ -270,6 +307,16 @@ const WORKBENCHES = {
   ]
 };
 
+const WORKBENCH_META = {
+  "Scrappy": { max: 6, levels: { 1:{"Battery":2,"Wires":3}, 2:{"Battery":4,"Wires":5}, 3:{"Battery":6,"Wires":8,"Magnets":2}, 4:{"Battery":8,"Wires":10,"Magnets":4}, 5:{"Battery":10,"Wires":12,"Magnets":6,"Metal Parts":6}, 6:{"Battery":12,"Wires":15,"Magnets":8,"ARC Alloy":4} } },
+  "Gunsmith": { max: 3, levels: { 1:{"Metal Parts":20,"Rubber Parts":30}, 2:{"Metal Parts":30,"Rubber Parts":40,"Battery":8}, 3:{"Metal Parts":45,"Rubber Parts":60,"Battery":12,"ARC Alloy":5} } },
+  "Gear Bench": { max: 3, levels: { 1:{"Plastic Parts":25,"Fabric":30}, 2:{"Plastic Parts":35,"Fabric":40,"Wires":8}, 3:{"Plastic Parts":50,"Fabric":55,"Wires":12,"ARC Alloy":6} } },
+  "Medical Lab": { max: 3, levels: { 1:{"Fabric":50,"ARC Alloy":6}, 2:{"Fabric":65,"ARC Alloy":8,"Chemicals":10}, 3:{"Fabric":80,"ARC Alloy":12,"Chemicals":18,"Stim":8} } },
+  "Utility Station": { max: 3, levels: { 1:{"Plastic Parts":50,"ARC Alloy":6}, 2:{"Plastic Parts":65,"ARC Alloy":8,"Magnets":10}, 3:{"Plastic Parts":80,"ARC Alloy":12,"Magnets":16,"Battery":8} } },
+  "Explosives Station": { max: 3, levels: { 1:{"Chemicals":50,"ARC Alloy":6}, 2:{"Chemicals":65,"ARC Alloy":8,"Canister":10}, 3:{"Chemicals":80,"ARC Alloy":12,"Canister":16,"Crude Oil":10} } },
+  "Refiner": { max: 3, levels: { 1:{"Metal Parts":60,"ARC Powercell":5}, 2:{"Metal Parts":80,"ARC Powercell":8,"Battery":10}, 3:{"Metal Parts":100,"ARC Powercell":12,"Battery":16,"Magnets":12} } }
+};
+
 const profiles = {
   "Jartukainen":{
     player:"Jartukainen",
@@ -277,6 +324,10 @@ const profiles = {
     package:"Rebuild",
     spawn:"Spaceport",
     stage:"Season Start",
+    wbBench:"Gunsmith",
+    wbCurrent:1,
+    wbTarget:2,
+    wbMode:"single",
     stash:{}
   }
 };
@@ -289,6 +340,10 @@ const weaponSelect = document.getElementById("weaponSelect");
 const packageSelect = document.getElementById("packageSelect");
 const spawnSelect = document.getElementById("spawnSelect");
 const stageSelect = document.getElementById("stageSelect");
+const wbSelect = document.getElementById("wbSelect");
+const wbCurrent = document.getElementById("wbCurrent");
+const wbTarget = document.getElementById("wbTarget");
+const wbMode = document.getElementById("wbMode");
 const routeBox = document.getElementById("routeBox");
 const lootBox = document.getElementById("lootBox");
 const safeBox = document.getElementById("safeBox");
@@ -300,6 +355,8 @@ const summaryBox = document.getElementById("summaryBox");
 const lowStashBox = document.getElementById("lowStashBox");
 const benchTargetBox = document.getElementById("benchTargetBox");
 const raidAdviceBox = document.getElementById("raidAdviceBox");
+const upgradeSummary = document.getElementById("upgradeSummary");
+const upgradeGrid = document.getElementById("upgradeGrid");
 
 function iconUrl(item){
   return ICON_BASE + item.toLowerCase().replace(/\biv\b/g,"4").replace(/[^a-z0-9]+/g,"-") + ".png";
@@ -309,14 +366,24 @@ function fillSelect(select, values){
   select.innerHTML = "";
   values.forEach(v => {
     const o = document.createElement("option");
-    o.value = v;
-    o.textContent = v;
+    o.value = String(v);
+    o.textContent = String(v);
     select.appendChild(o);
   });
 }
 
-function currentProfile(){
-  return profiles[profileSelect.value];
+function currentProfile(){ return profiles[profileSelect.value]; }
+
+function getBenchMeta(){ return WORKBENCH_META[currentProfile().wbBench]; }
+
+function refreshWorkbenchLevelOptions(){
+  const meta = getBenchMeta();
+  const max = meta.max;
+  fillSelect(wbCurrent, Array.from({length:max}, (_,i)=>i+1));
+  fillSelect(wbTarget, Array.from({length:max}, (_,i)=>i+1));
+  wbCurrent.value = String(Math.min(currentProfile().wbCurrent || 1, max));
+  wbTarget.value = String(Math.min(currentProfile().wbTarget || Math.min(max, Number(wbCurrent.value)+1), max));
+  if(Number(wbTarget.value) < Number(wbCurrent.value)) wbTarget.value = wbCurrent.value;
 }
 
 function renderStash(){
@@ -348,10 +415,7 @@ function renderWorkbench(){
 }
 
 function getLowStash(profile){
-  return STASH_ITEMS
-    .map(item => ({ item, amount: profile.stash[item] || 0 }))
-    .sort((a,b) => a.amount - b.amount)
-    .slice(0,5);
+  return STASH_ITEMS.map(item => ({ item, amount: profile.stash[item] || 0 })).sort((a,b) => a.amount - b.amount).slice(0,5);
 }
 
 function getWorkbenchNeedSummary(profile){
@@ -361,14 +425,39 @@ function getWorkbenchNeedSummary(profile){
   return Object.keys(counts).slice(0,5).map(item => ({ item, amount: profile.stash[item] || 0 }));
 }
 
+function getUpgradeNeeds(profile){
+  const bench = profile.wbBench;
+  const meta = WORKBENCH_META[bench];
+  const current = Number(profile.wbCurrent || 1);
+  const target = Number(profile.wbTarget || current);
+  const mode = profile.wbMode || 'single';
+  const totals = {};
+  const start = current;
+  const end = mode === 'single' ? current : target;
+  for(let lvl = start; lvl <= end; lvl++){
+    const req = meta.levels[lvl] || {};
+    Object.entries(req).forEach(([item, amount]) => {
+      totals[item] = (totals[item] || 0) + amount;
+    });
+  }
+  return Object.entries(totals).map(([item, need]) => ({
+    item,
+    need,
+    have: profile.stash[item] || 0,
+    missing: Math.max(0, need - (profile.stash[item] || 0))
+  }));
+}
+
 function getRaidAdvice(profile){
   const low = getLowStash(profile).map(x => x.item);
   const stageNeeds = getWorkbenchNeedSummary(profile).map(x => x.item);
+  const upgradeNeeds = getUpgradeNeeds(profile).filter(x => x.missing > 0).map(x => x.item);
   const spawnScores = Object.entries(SPAWNS).map(([name, cfg]) => {
     let score = 0;
     cfg.strong.forEach(item => {
       if (low.includes(item)) score += 2;
-      if (stageNeeds.includes(item)) score += 3;
+      if (stageNeeds.includes(item)) score += 2;
+      if (upgradeNeeds.includes(item)) score += 4;
       if ((PACKAGES[profile.package]?.loot || []).includes(item)) score += 2;
     });
     return { name, score, items: cfg.strong };
@@ -392,11 +481,38 @@ function renderAdvisor(){
 
   const advice = getRaidAdvice(p);
   const packageLoot = PACKAGES[p.package].loot.slice(0,3).join(', ');
+  const topMissing = getUpgradeNeeds(p).filter(x => x.missing > 0).slice(0,3).map(x => x.item).join(', ');
   raidAdviceBox.innerHTML = `
     <div class="kv-row"><span>Best spawn now</span><span class="ok">${advice.name}</span></div>
     <div class="kv-row"><span>Why</span><span>${advice.items.join(', ')}</span></div>
+    <div class="kv-row"><span>Upgrade farm</span><span>${topMissing || 'None'}</span></div>
     <div class="kv-row"><span>Raid focus</span><span>${packageLoot}</span></div>
   `;
+}
+
+function renderUpgradeCalculator(){
+  const p = currentProfile();
+  const rows = getUpgradeNeeds(p);
+  upgradeGrid.innerHTML = '';
+  const current = Number(p.wbCurrent || 1);
+  const target = Number(p.wbTarget || current);
+  const mode = p.wbMode === 'single' ? `${current} only` : `${current} → ${target}`;
+  const missingRows = rows.filter(r => r.missing > 0);
+  upgradeSummary.textContent = `${p.wbBench} | Levels ${mode} | ${missingRows.length ? 'Still needed: ' + missingRows.map(r => `${r.item} ${r.missing}`).join(', ') : 'All required materials are already in stash.'}`;
+
+  rows.forEach(r => {
+    const pct = r.need === 0 ? 100 : Math.max(0, Math.min(100, Math.round((r.have / r.need) * 100)));
+    const cls = r.missing === 0 ? 'ok' : r.have > 0 ? 'warn' : 'bad';
+    const card = document.createElement('div');
+    card.className = 'upgrade-card';
+    card.innerHTML = `
+      <div class="loot-icon"> <img src="${iconUrl(r.item)}" alt="${r.item}" onerror="this.remove()"> </div>
+      <strong style="margin-top:10px">${r.item}</strong>
+      <div class="tiny">Need ${r.need} • Have ${r.have} • Missing <span class="${cls}">${r.missing}</span></div>
+      <div class="bar"><div class="bar-fill" style="width:${pct}%"></div></div>
+    `;
+    upgradeGrid.appendChild(card);
+  });
 }
 
 function renderRaid(){
@@ -418,6 +534,7 @@ function renderRaid(){
   consBox.innerHTML = pkg.cons.map(i => `<span class="pill">${i}</span>`).join("");
   weaponGoalBox.textContent = p.weapon;
 
+  const missingUpgrades = getUpgradeNeeds(p).filter(x => x.missing > 0).map(x => `${x.item} ${x.missing}`).join(', ');
   summaryBox.textContent =
 `ARC RAID PLAN
 Player: ${p.player}
@@ -430,7 +547,9 @@ Safe Pocket: ${pkg.safe.join(", ")}
 Consumables: ${pkg.cons.join(", ")}
 Route: ${spawn.route.join(" -> ")}
 Recommended Spawn Right Now: ${advice.name}
-Recommended Target Items: ${advice.items.join(", ")}`;
+Recommended Target Items: ${advice.items.join(", ")}
+Workbench Meta: ${p.wbBench} (${p.wbMode === 'single' ? p.wbCurrent : p.wbCurrent + ' -> ' + p.wbTarget})
+Workbench Missing: ${missingUpgrades || 'Nothing missing'}`;
 }
 
 function syncFromInputs(){
@@ -440,6 +559,10 @@ function syncFromInputs(){
   p.package = packageSelect.value;
   p.spawn = spawnSelect.value;
   p.stage = stageSelect.value;
+  p.wbBench = wbSelect.value;
+  p.wbCurrent = Number(wbCurrent.value || 1);
+  p.wbTarget = Number(wbTarget.value || p.wbCurrent);
+  p.wbMode = wbMode.value;
   document.querySelectorAll("[data-stash]").forEach(input => {
     p.stash[input.dataset.stash] = Number(input.value || 0);
   });
@@ -452,9 +575,13 @@ function loadProfile(){
   packageSelect.value = p.package;
   spawnSelect.value = p.spawn;
   stageSelect.value = p.stage;
+  wbSelect.value = p.wbBench;
+  refreshWorkbenchLevelOptions();
+  wbMode.value = p.wbMode || 'single';
   renderStash();
   renderWorkbench();
   renderAdvisor();
+  renderUpgradeCalculator();
   renderRaid();
 }
 
@@ -467,6 +594,10 @@ function addProfile(){
     package:"Rebuild",
     spawn:"Spaceport",
     stage:"Season Start",
+    wbBench:"Gunsmith",
+    wbCurrent:1,
+    wbTarget:2,
+    wbMode:"single",
     stash:{}
   };
   STASH_ITEMS.forEach(i => profiles[name].stash[i] = 0);
@@ -488,6 +619,7 @@ fillSelect(profileSelect, Object.keys(profiles));
 fillSelect(weaponSelect, WEAPONS);
 fillSelect(packageSelect, Object.keys(PACKAGES));
 fillSelect(spawnSelect, Object.keys(SPAWNS));
+fillSelect(wbSelect, Object.keys(WORKBENCH_META));
 
 profileSelect.onchange = loadProfile;
 playerInput.oninput = () => { syncFromInputs(); renderRaid(); };
@@ -495,11 +627,16 @@ weaponSelect.onchange = () => { syncFromInputs(); renderRaid(); };
 packageSelect.onchange = () => { syncFromInputs(); renderAdvisor(); renderRaid(); };
 spawnSelect.onchange = () => { syncFromInputs(); renderRaid(); };
 stageSelect.onchange = () => { syncFromInputs(); renderWorkbench(); renderAdvisor(); renderRaid(); };
+wbSelect.onchange = () => { syncFromInputs(); refreshWorkbenchLevelOptions(); syncFromInputs(); renderAdvisor(); renderUpgradeCalculator(); renderRaid(); };
+wbCurrent.onchange = () => { if(Number(wbTarget.value) < Number(wbCurrent.value)) wbTarget.value = wbCurrent.value; syncFromInputs(); renderAdvisor(); renderUpgradeCalculator(); renderRaid(); };
+wbTarget.onchange = () => { syncFromInputs(); renderAdvisor(); renderUpgradeCalculator(); renderRaid(); };
+wbMode.onchange = () => { syncFromInputs(); renderAdvisor(); renderUpgradeCalculator(); renderRaid(); };
 
 document.addEventListener("input", e => {
   if(e.target.matches("[data-stash]")){
     syncFromInputs();
     renderAdvisor();
+    renderUpgradeCalculator();
     renderRaid();
   }
 });
